@@ -26,9 +26,9 @@ void *hal_display_get_context(void)
 void hal_init(void)
 {
     if (ili9341_init(&_disp_dev, &ili9341_params[0]) == 0) {
-        puts("[OK]");
+        LOG_INFO("[ILI9341]: OK!\n");
     }
     else {
-        LOG_ERROR("[ILI9341]: Device initialization failed");
+        LOG_ERROR("[ILI9341]: Device initialization failed\n");
     }
 }
