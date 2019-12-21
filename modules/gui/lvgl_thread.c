@@ -14,6 +14,7 @@
 #include "board.h"
 #include "xtimer.h"
 #include "hal.h"
+#include "hal_input.h"
 #include "gui.h"
 
 #define LVGL_THREAD_NAME    "lvgl"
@@ -34,11 +35,16 @@ static char _dispatch_stack[DISPATCHER_STACKSIZE];
 static void dispatch_display_flush(event_t *event);
 
 static lv_disp_drv_t _disp_drv;
+static lv_indev_drv_t _indev_drv;
 static lv_disp_buf_t _disp_buf;
+
+static unsigned press_hist[2];
+static hal_input_coord_t _coord;
 
 static lv_color_t _buf1[GUI_BUF_SIZE];
 static lv_color_t _buf2[GUI_BUF_SIZE];
 
+/* Buffer flush events */
 static gui_flush_event_t ev[2] = {
     {
         .super = { .handler = dispatch_display_flush, },
@@ -92,15 +98,39 @@ static void _display_flush_cb(struct _disp_drv_t * disp_drv,
     /* Dispatch event */
 }
 
+static bool _input_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
+{
+    hal_input_coord_t coord;
+    int res = hal_input_get_measurement(hal_input_get_context(), &coord);
+    unsigned press = res == 1 ? 1 : 0;
+    for (size_t i = 0; i < ARRAY_SIZE(press_hist) - 1; i++) {
+        press &= press_hist[i];
+        press_hist[i] = press_hist[i+1];
+    }
+    press_hist[ARRAY_SIZE(press_hist) - 1] = res;
+    if (press) {
+        memcpy(&_coord, &coord, sizeof(coord));
+    }
+    data->point.x = _coord.x;
+    data->point.y = _coord.y;
+    data->state = press == 1 ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
+    return false;
+}
+
 int lvgl_thread_create(void)
 {
     (void)_buf2;
     lv_disp_buf_init(&_disp_buf, _buf1, _buf2, GUI_BUF_SIZE);
     lv_disp_drv_init(&_disp_drv);            /*Basic initialization*/
+    lv_indev_drv_init(&_indev_drv);
 
     _disp_drv.flush_cb = _display_flush_cb;
     _disp_drv.buffer = &_disp_buf;
+    _indev_drv.type = LV_INDEV_TYPE_POINTER;
+    _indev_drv.read_cb = _input_read_cb;
+
     lv_disp_t *display = lv_disp_drv_register(&_disp_drv);
+    lv_indev_drv_register(&_indev_drv);
 
     int res = thread_create(_dispatch_stack, DISPATCHER_STACKSIZE,
                             DISPATCHER_THREAD_PRIO,
@@ -113,6 +143,7 @@ int lvgl_thread_create(void)
     return res;
 }
 
+/* Switch the screen displayed */
 static lv_obj_t *_switch_screen(lv_obj_t *active, gui_screen_t screen)
 {
     lv_obj_t *next = _screen_map[screen].create();
@@ -144,7 +175,7 @@ static void *_lvgl_thread(void* arg)
     {
         lv_tick_inc(10);
         count++;
-        if (count > 200) {
+        if (count > 1000) {
             if (selected == GUI_SCREEN_TIME) {
                 selected = GUI_SCREEN_MENU;
             }

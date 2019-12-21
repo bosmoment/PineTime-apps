@@ -7,7 +7,19 @@
  */
 
 #include <stdint.h>
+#include "log.h"
 #include "lvgl.h"
+
+static void _screen_menu_pressed(lv_obj_t *obj, lv_event_t event)
+{
+    switch (event) {
+        case LV_EVENT_CLICKED:
+            LOG_INFO("button clicked!\n");
+            break;
+        default:
+            break;
+    }
+}
 
 lv_obj_t *screen_menu_create(void)
 {
@@ -20,6 +32,8 @@ lv_obj_t *screen_menu_create(void)
     lv_obj_t *list_btn;
 
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE, "New");
+    lv_obj_set_event_cb(list_btn, _screen_menu_pressed);
+
 
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_DIRECTORY, "Open");
 
