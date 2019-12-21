@@ -1,0 +1,4 @@
+[submodule "RIOT"]
+	path = RIOT
+	url = https://github.com/bosmoment/RIOT.git
+	branch = work/pinetime
