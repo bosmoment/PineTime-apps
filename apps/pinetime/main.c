@@ -10,7 +10,6 @@
 #include "xtimer.h"
 #include "lvgl.h"
 
-#include "riot_logo.h"
 #include "xtimer.h"
 
 #include "shell.h"
