@@ -59,7 +59,7 @@ int hal_input_get_measurement(input_t *input, hal_input_coord_t *coord)
     else if (y < 0) {
         y = 0;
     }
-    LOG_INFO("Z: %" PRIu16"\n", xyz.z);
+    LOG_DEBUG("Z: %" PRIu16"\n", xyz.z);
 #if HAL_INPUT_REVERSE_Y
     y = LV_VER_RES_MAX - y;
 #endif
