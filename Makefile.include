@@ -1,0 +1,6 @@
+# Base application makefile
+
+RIOTBASE ?= $(PINETIMEBASE)/RIOT
+include $(PINETIMEBASE)/modules/Makefile.include
+
+include $(RIOTBASE)/Makefile.include
