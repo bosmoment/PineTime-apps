@@ -1,0 +1,2 @@
+USEMODULE += ili9341
+USEMODULE += core_thread_flags
