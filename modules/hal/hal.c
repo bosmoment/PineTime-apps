@@ -31,4 +31,10 @@ void hal_init(void)
     else {
         LOG_ERROR("[ILI9341]: Device initialization failed\n");
     }
+    if (hal_input_init() == 0) {
+        LOG_INFO("[XPT2046]: OK!\n");
+    }
+    else {
+        LOG_ERROR("[XPT2046]: Device initialization failed\n");
+    }
 }

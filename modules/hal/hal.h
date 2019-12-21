@@ -13,6 +13,8 @@
 #include "ili9341.h"
 #include "event.h"
 
+#include "hal_input.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
