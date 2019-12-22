@@ -14,9 +14,15 @@
 #include "event.h"
 #include "ts_event.h"
 #include "widget.h"
+#include "thread.h"
+#include "xtimer.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef CONFIG_GUI_LVGL_LOOP_TIME
+#define CONFIG_GUI_LVGL_LOOP_TIME       (10 * US_PER_MS)
 #endif
 
 typedef enum {
@@ -54,6 +60,8 @@ typedef struct {
     lv_disp_t *display;
     event_queue_t queue;
     widget_t *active_widget;
+    xtimer_t lvgl_loop; /* timer loop for lvgl */
+    kernel_pid_t pid;
 } gui_t;
 
 typedef struct {

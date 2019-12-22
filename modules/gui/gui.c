@@ -31,6 +31,10 @@
 
 #define GUI_BUF_SIZE             (LV_HOR_RES_MAX * 6)
 
+#define GUI_THREAD_FLAG_LVGL_HANDLE    (1 << 5)
+#define GUI_THREAD_FLAG_IDLE           (1 << 6)
+#define GUI_THREAD_FLAG_WAKE           (1 << 7)
+
 static void *_lvgl_thread(void* arg);
 static void *_lvgl_dispatcher(void *arg);
 static char _stack[LVGL_STACKSIZE];
@@ -175,24 +179,53 @@ int lvgl_thread_create(void)
     return res;
 }
 
+static void _gui_lvgl_trigger(void *arg)
+{
+    gui_t *gui = arg;
+    thread_flags_set((thread_t*)sched_threads[gui->pid], GUI_THREAD_FLAG_LVGL_HANDLE);
+    xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
+}
+
 static void *_lvgl_thread(void* arg)
 {
     gui_t *gui = (gui_t*)arg;
+    gui->pid = thread_getpid();
+
+    gui->lvgl_loop.callback = _gui_lvgl_trigger;
+    gui->lvgl_loop.arg = gui;
 
     lv_theme_t *th = lv_theme_night_init(10, NULL);
     lv_theme_set_current(th);
 
+    event_queue_claim(&gui->queue);
 
-    xtimer_ticks32_t last_wake = xtimer_now();
+    /* Bootstrap lvgl loop events */
+    xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
     while(1)
     {
-        event_t *ev = event_get(&gui->queue);
-        if (ev) {
-            LOG_INFO("[GUI]: handling event\n");
-            ev->handler(ev);
+
+        thread_flags_t flag = thread_flags_wait_any(
+            GUI_THREAD_FLAG_IDLE |
+            GUI_THREAD_FLAG_WAKE |
+            GUI_THREAD_FLAG_LVGL_HANDLE |
+            THREAD_FLAG_EVENT
+            );
+        if (flag & THREAD_FLAG_EVENT) {
+            event_t *ev = event_get(&gui->queue);
+            if (ev) {
+                LOG_INFO("[GUI]: handling event\n");
+                ev->handler(ev);
+            }
+            else {
+                LOG_ERROR("[GUI]: No event\n");
+            }
         }
-        lv_task_handler();
-        xtimer_periodic_wakeup(&last_wake, 10 * US_PER_MS);
+        if (flag & GUI_THREAD_FLAG_LVGL_HANDLE) {
+            lv_task_handler();
+        }
+        if (flag & GUI_THREAD_FLAG_IDLE) {
+            /* idle handling */
+        }
     }
     assert(false);
     /* should be never reached */
