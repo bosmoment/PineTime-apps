@@ -1,6 +1,6 @@
 # Base application makefile
 
-RIOTBASE ?= $(PINETIMEBASE)/../RIOT-pinetime
+RIOTBASE ?= $(PINETIMEBASE)/RIOT
 
 WIDGETDIR ?= $(PINETIMEBASE)/widgets
 
