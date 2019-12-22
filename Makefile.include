@@ -1,6 +1,11 @@
 # Base application makefile
 
-RIOTBASE ?= $(PINETIMEBASE)/RIOT
+RIOTBASE ?= $(PINETIMEBASE)/../RIOT-pinetime
+
+WIDGETDIR ?= $(PINETIMEBASE)/widgets
+
 include $(PINETIMEBASE)/modules/Makefile.include
+
+include $(WIDGETDIR)/Makefile.include
 
 include $(RIOTBASE)/Makefile.include
