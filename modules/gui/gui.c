@@ -8,14 +8,18 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "log.h"
+#include "irq.h"
 #include "lvgl.h"
 #include "board.h"
 #include "xtimer.h"
 #include "hal.h"
 #include "hal_input.h"
 #include "gui.h"
+#include "ts_event.h"
+#include "widget.h"
 
 #define LVGL_THREAD_NAME    "lvgl"
 #define LVGL_THREAD_PRIO    4
@@ -34,9 +38,7 @@ static char _dispatch_stack[DISPATCHER_STACKSIZE];
 
 static void dispatch_display_flush(event_t *event);
 
-static lv_disp_drv_t _disp_drv;
-static lv_indev_drv_t _indev_drv;
-static lv_disp_buf_t _disp_buf;
+static gui_t _gui;
 
 static unsigned press_hist[2];
 static hal_input_coord_t _coord;
@@ -57,22 +59,18 @@ static gui_flush_event_t ev[2] = {
 extern lv_obj_t *screen_time_create(void);
 extern lv_obj_t *screen_menu_create(void);
 
+static void _gui_event_switch_widget_draw(event_t *event);
+
+static gui_event_widget_switch_t ev_sw = {
+    .super = { .super = { .handler = _gui_event_switch_widget_draw} }
+};
+
 static event_queue_t _queue;
 
-typedef enum {
-    GUI_SCREEN_TIME,
-    GUI_SCREEN_MENU,
-} gui_screen_t;
-
-typedef struct {
-    gui_screen_t type;
-    lv_obj_t *(*create)(void);
-} gui_screen_map_t;
-
-static const gui_screen_map_t _screen_map[] = {
-    { GUI_SCREEN_TIME, screen_time_create },
-    { GUI_SCREEN_MENU, screen_menu_create },
-};
+gui_t *gui_get_ctx(void)
+{
+    return &_gui;
+}
 
 static void _display_flush_cb(struct _disp_drv_t * disp_drv,
                               const lv_area_t * area, lv_color_t * color_p)
@@ -117,20 +115,54 @@ static bool _input_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
     return false;
 }
 
+/* Switch the screen displayed */
+static void _switch_widget_draw(gui_t *gui, widget_t *widget)
+{
+    LOG_INFO("switching screen to \"%s\"\n", widget->spec->name);
+    if (widget == gui->active_widget) {
+        return;
+    }
+    widget_draw(widget);
+    lv_scr_load(widget->spec->container(widget));
+    if (gui->active_widget) {
+        widget_close(gui->active_widget);
+    }
+    gui->active_widget = widget;
+}
+
+static void _gui_event_switch_widget_draw(event_t *event)
+{
+    gui_event_widget_switch_t *sw = (gui_event_widget_switch_t *)event;
+    _switch_widget_draw(gui_get_ctx(), sw->widget);
+    ts_event_clear(&sw->super);
+}
+
+int gui_event_submit_switch_widget(widget_t *widget)
+{
+    gui_t *gui = gui_get_ctx();
+    if (ts_event_claim(&ev_sw.super) == -EBUSY) {
+        return -EBUSY;
+    }
+    LOG_INFO("[GUI]: Submitting widget switch event\n");
+    ev_sw.widget = widget;
+    event_post(&gui->queue, &ev_sw.super.super);
+    return 0;
+}
+
 int lvgl_thread_create(void)
 {
-    (void)_buf2;
-    lv_disp_buf_init(&_disp_buf, _buf1, _buf2, GUI_BUF_SIZE);
-    lv_disp_drv_init(&_disp_drv);            /*Basic initialization*/
-    lv_indev_drv_init(&_indev_drv);
+    gui_t *gui = &_gui;
+    lv_disp_buf_init(&gui->disp_buf, _buf1, _buf2, GUI_BUF_SIZE);
+    lv_disp_drv_init(&gui->disp_drv);            /*Basic initialization*/
+    lv_indev_drv_init(&gui->indev_drv);
 
-    _disp_drv.flush_cb = _display_flush_cb;
-    _disp_drv.buffer = &_disp_buf;
-    _indev_drv.type = LV_INDEV_TYPE_POINTER;
-    _indev_drv.read_cb = _input_read_cb;
+    gui->disp_drv.flush_cb = _display_flush_cb;
+    gui->disp_drv.buffer = &gui->disp_buf;
+    gui->indev_drv.type = LV_INDEV_TYPE_POINTER;
+    gui->indev_drv.read_cb = _input_read_cb;
 
-    lv_disp_t *display = lv_disp_drv_register(&_disp_drv);
-    lv_indev_drv_register(&_indev_drv);
+    gui->display = lv_disp_drv_register(&gui->disp_drv);
+    lv_indev_drv_register(&gui->indev_drv);
 
     int res = thread_create(_dispatch_stack, DISPATCHER_STACKSIZE,
                             DISPATCHER_THREAD_PRIO,
@@ -139,51 +171,25 @@ int lvgl_thread_create(void)
 
     res = thread_create(_stack, LVGL_STACKSIZE, LVGL_THREAD_PRIO,
                             THREAD_CREATE_STACKTEST, _lvgl_thread,
-                            (void *)display, LVGL_THREAD_NAME);
+                            gui, LVGL_THREAD_NAME);
     return res;
-}
-
-/* Switch the screen displayed */
-static lv_obj_t *_switch_screen(lv_obj_t *active, gui_screen_t screen)
-{
-    lv_obj_t *next = _screen_map[screen].create();
-    lv_scr_load(next);
-    if (active) {
-        lv_obj_del(active);
-    }
-    return next;
 }
 
 static void *_lvgl_thread(void* arg)
 {
-    lv_disp_t *display = (lv_disp_t*)arg;
-    (void)display;
+    gui_t *gui = (gui_t*)arg;
 
     lv_theme_t *th = lv_theme_night_init(10, NULL);
     lv_theme_set_current(th);
 
-    lv_obj_t *cur_screen = NULL;
-
-    gui_screen_t selected = GUI_SCREEN_TIME;
-
-    cur_screen = _switch_screen(cur_screen, selected);
-    (void)cur_screen;
 
     xtimer_ticks32_t last_wake = xtimer_now();
-    uint32_t count = 0;
     while(1)
     {
-        lv_tick_inc(10);
-        count++;
-        if (count > 1000) {
-            if (selected == GUI_SCREEN_TIME) {
-                selected = GUI_SCREEN_MENU;
-            }
-            else {
-                selected = GUI_SCREEN_TIME;
-            }
-            count = 0;
-            cur_screen = _switch_screen(cur_screen, selected);
+        event_t *ev = event_get(&gui->queue);
+        if (ev) {
+            LOG_INFO("[GUI]: handling event\n");
+            ev->handler(ev);
         }
         lv_task_handler();
         xtimer_periodic_wakeup(&last_wake, 10 * US_PER_MS);

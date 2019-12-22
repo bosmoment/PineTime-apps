@@ -1,6 +1,7 @@
 USEPKG += lvgl
 USEMODULE += xtimer
 USEMODULE += event
+USEMODULE += util
 
 USEMODULE += lvgl_core
 USEMODULE += lvgl_objx
@@ -9,7 +10,3 @@ USEMODULE += lvgl_themes
 USEMODULE += lvgl_draw
 USEMODULE += lvgl_font
 USEMODULE += lvgl_hal
-
-# screens
-USEMODULE += screen_time
-USEMODULE += screen_menu

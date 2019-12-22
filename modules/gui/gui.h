@@ -10,11 +10,31 @@
 #define APP_GUI
 
 #include <stdint.h>
+#include "lvgl.h"
 #include "event.h"
+#include "ts_event.h"
+#include "widget.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum {
+    GUI_SCREEN_NONE,
+    GUI_SCREEN_OFF,
+    GUI_SCREEN_TIME,
+    GUI_SCREEN_MENU,
+} gui_screen_t;
+
+typedef enum {
+    GUI_INPUT_EVENT_SCREEN_PRESS, /* Generic whole area screen press */
+    GUI_INPUT_EVENT_LEAVE,        /* Leave current GUI context */
+} gui_input_event_t;
+
+typedef struct {
+    gui_screen_t type;
+    lv_obj_t *(*create)(void);
+} gui_screen_map_t;
 
 typedef struct {
     event_t super;
@@ -27,7 +47,23 @@ typedef struct {
     bool used;
 } gui_flush_event_t;
 
+typedef struct {
+    lv_disp_drv_t disp_drv;
+    lv_indev_drv_t indev_drv;
+    lv_disp_buf_t disp_buf;
+    lv_disp_t *display;
+    event_queue_t queue;
+    widget_t *active_widget;
+} gui_t;
 
+typedef struct {
+    ts_event_t super;
+    widget_t *widget;
+} gui_event_widget_switch_t;
+
+gui_t *gui_get_ctx(void);
+
+int gui_event_submit_switch_widget(widget_t *widget);
 #ifdef __cplusplus
 }
 #endif
