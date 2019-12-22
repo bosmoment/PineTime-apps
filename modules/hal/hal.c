@@ -16,10 +16,25 @@
 
 /* ili9341 device driver state */
 static ili9341_t _disp_dev;
+static bool display_on;
 
 void *hal_display_get_context(void)
 {
     return (display_t*)&_disp_dev;
+}
+
+void hal_display_off(void)
+{
+    ili9341_set_brightness(hal_display_get_context(), 0x00);
+    ili9341_sleep_mode(hal_display_get_context(), true);
+    display_on = false;
+}
+
+void hal_display_on(void)
+{
+    ili9341_sleep_mode(hal_display_get_context(), false);
+    ili9341_set_brightness(hal_display_get_context(), 0xff);
+    display_on = true;
 }
 
 /* Should be called somewhere during auto_init */
@@ -27,6 +42,7 @@ void hal_init(void)
 {
     if (ili9341_init(&_disp_dev, &ili9341_params[0]) == 0) {
         LOG_INFO("[ILI9341]: OK!\n");
+        display_on = true;
     }
     else {
         LOG_ERROR("[ILI9341]: Device initialization failed\n");

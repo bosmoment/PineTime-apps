@@ -32,6 +32,8 @@ static inline void hal_display_flush(display_t *display, uint16_t x1,
 display_t *hal_display_get_context(void);
 
 void hal_init(void);
+void hal_display_on(void);
+void hal_display_off(void);
 
 #ifdef __cplusplus
 }
