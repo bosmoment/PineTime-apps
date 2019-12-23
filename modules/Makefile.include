@@ -1,7 +1,7 @@
 ifneq (,$(filter gui,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/gui
 endif
-ifneq (,$(filter controlle,$(USEMODULE)))
+ifneq (,$(filter controller,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/controller
 endif
 ifneq (,$(filter hal,$(USEMODULE)))
@@ -13,3 +13,5 @@ endif
 ifneq (,$(filter widget,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/widget
 endif
+
+INCLUDES += $(addprefix -I, $(EXTERNAL_MODULE_DIRS))

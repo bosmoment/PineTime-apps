@@ -1,0 +1,34 @@
+ifneq (,$(filter gui,$(USEMODULE)))
+  USEPKG += lvgl
+  USEMODULE += xtimer
+  USEMODULE += event
+  USEMODULE += util
+  USEMODULE += hal
+  
+  USEMODULE += lvgl_core
+  USEMODULE += lvgl_objx
+  USEMODULE += lvgl_misc
+  USEMODULE += lvgl_themes
+  USEMODULE += lvgl_draw
+  USEMODULE += lvgl_font
+  USEMODULE += lvgl_hal
+  USEMODULE += core_thread_flags
+endif
+
+ifneq (,$(filter controller,$(USEMODULE)))
+  USEMODULE += widget
+  USEMODULE += util
+endif
+
+ifneq (,$(filter hal,$(USEMODULE)))
+  USEMODULE += ili9341
+  USEMODULE += xpt2046
+endif
+
+ifneq (,$(filter util,$(USEMODULE)))
+  USEMODULE += core_thread_flags
+endif
+
+ifneq (,$(filter widget,$(USEMODULE)))
+  USEMODULE += util
+endif

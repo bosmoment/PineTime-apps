@@ -1,3 +1,0 @@
-USEMODULE += ili9341
-USEMODULE += xpt2046
-USEMODULE += core_thread_flags
