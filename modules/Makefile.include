@@ -1,6 +1,15 @@
-EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/gui
-EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/controller
-EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/hal
-EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/util
-EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/widget
-INCLUDES += $(addprefix -I, $(EXTERNAL_MODULE_DIRS))
+ifneq (,$(filter gui,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/gui
+endif
+ifneq (,$(filter controlle,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/controller
+endif
+ifneq (,$(filter hal,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/hal
+endif
+ifneq (,$(filter util,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/util
+endif
+ifneq (,$(filter widget,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/widget
+endif
