@@ -12,6 +12,7 @@
 #include "log.h"
 #include "lvgl.h"
 #include "menu_tiles.h"
+#include "widget_conf.h"
 
 static const widget_spec_t menu_tiles_spec;
 
@@ -51,19 +52,13 @@ lv_obj_t *screen_menu_create(void)
     lv_obj_align(list1, NULL, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t *list_btn;
-
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE, "New");
-    assert(list_btn);
-
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_DIRECTORY, "Open");
-    assert(list_btn);
-
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_EDIT, "Edit");
-    assert(list_btn);
-
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_SAVE, "Save");
-    assert(list_btn);
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_CLOSE, "Close");
+    for (size_t i=2; i < ARRAY_SIZE(widgets_installed); i++) {
+        const widget_t *widget = widgets_installed[i];
+        LOG_INFO("[menu_tiles]: adding button for %s\n", widget->spec->name);
+        list_btn = lv_list_add_btn(list1, NULL, widget_get_label(widget));
+        assert(list_btn);
+    }
+    list_btn = lv_list_add_btn(list1, NULL, LV_SYMBOL_NEW_LINE " Close");
     assert(list_btn);
     lv_obj_set_event_cb(list_btn, _screen_menu_exit);
     (void)list_btn;
