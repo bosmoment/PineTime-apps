@@ -10,6 +10,7 @@
 #include "xtimer.h"
 #include "lvgl.h"
 #include "controller.h"
+#include "bleman.h"
 
 #include "shell.h"
 #include "msg.h"
@@ -28,6 +29,7 @@ int main(void)
 
     hal_init();
     lvgl_thread_create();
+    bleman_thread_create();
 
     controller_thread_create();
     /* start shell */
