@@ -3,8 +3,13 @@
 RIOTBASE ?= $(PINETIMEBASE)/RIOT
 
 WIDGETDIR ?= $(PINETIMEBASE)/widgets
+PINEMODULEDIR ?= $(PINETIMEBASE)/modules
 
-include $(PINETIMEBASE)/modules/Makefile.include
+# Ensures the Makefile.dep is used in the dependency resolution
+#
+EXTERNAL_MODULE_DIRS += $(PINEMODULEDIR)
+# Early include
+include $(PINEMODULEDIR)/Makefile.include
 
 include $(WIDGETDIR)/Makefile.include
 
