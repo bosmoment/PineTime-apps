@@ -11,6 +11,7 @@
 
 #include "lvgl.h"
 #include "widget.h"
+#include "controller.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,7 +19,13 @@ extern "C" {
 
 typedef struct _home_time_widget {
     widget_t widget;
+    control_event_handler_t handler;
     lv_obj_t *screen;
+    lv_obj_t *lv_time;
+    lv_obj_t *lv_date;
+    lv_obj_t *lv_second_meter;
+    /* Shared storage between gui and control */
+    controller_time_spec_t time;
 } home_time_widget_t;
 
 

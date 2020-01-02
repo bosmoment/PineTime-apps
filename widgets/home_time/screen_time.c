@@ -15,7 +15,12 @@
 #include "kernel_defines.h"
 
 static const widget_spec_t home_time_spec;
+static lv_style_t style_lmeter;
 
+static int _screen_time_update_screen(widget_t *widget);
+unsigned hours = 19;
+unsigned minutes = 43;
+unsigned seconds = 20;
 /* Widget context */
 home_time_widget_t home_time_widget = {
     .widget = {.spec = &home_time_spec }
@@ -37,16 +42,36 @@ static void _screen_time_pressed(lv_obj_t *obj, lv_event_t event)
     switch (event) {
         case LV_EVENT_PRESSED:
             LOG_INFO("Screen press event\n");
-            controller_event_submit_input_event(&ht->widget,
-                                                CONTROLLER_EVENT_WIDGET_LEAVE);
+            controller_action_submit_input_action(&ht->widget,
+                                                CONTROLLER_ACTION_WIDGET_LEAVE);
         default:
             break;
     }
 }
 
-lv_obj_t *screen_time_create(void)
+static void _swap_style(home_time_widget_t *ht)
+{
+    if (ht->time.minute % 2) {
+        style_lmeter.line.color = LV_COLOR_SILVER;
+        style_lmeter.body.main_color = LV_COLOR_OLIVE;
+        style_lmeter.body.grad_color = LV_COLOR_OLIVE;
+    }
+    else {
+        style_lmeter.line.color = LV_COLOR_OLIVE;
+        style_lmeter.body.main_color = LV_COLOR_SILVER;
+        style_lmeter.body.grad_color = LV_COLOR_SILVER;
+    }
+}
+
+lv_obj_t *screen_time_create(home_time_widget_t *ht)
 {
     lv_obj_t *scr = lv_obj_create(NULL, NULL);
+    lv_style_copy(&style_lmeter, &lv_style_pretty_color);
+    style_lmeter.line.width = 3;
+    style_lmeter.line.color = LV_COLOR_SILVER;
+    style_lmeter.body.main_color = LV_COLOR_OLIVE;
+    style_lmeter.body.grad_color = LV_COLOR_OLIVE;
+
 
     lv_obj_t * label1 = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label1, LV_LABEL_LONG_BREAK);
@@ -55,18 +80,91 @@ lv_obj_t *screen_time_create(void)
     lv_obj_set_height(label1, 200);
     lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);
     lv_obj_align(label1, scr, LV_ALIGN_CENTER, 0, 0);
+    ht->lv_time = label1;
+
+    lv_obj_t * label_date = lv_label_create(scr, NULL);
+    lv_label_set_long_mode(label_date, LV_LABEL_LONG_BREAK);
+    lv_obj_set_width(label_date, 200);
+    lv_obj_set_height(label_date, 200);
+    lv_label_set_align(label_date, LV_LABEL_ALIGN_CENTER);
+    lv_obj_align(label_date, scr, LV_ALIGN_CENTER, 0, 30);
+    ht->lv_date = label_date;
+
+    lv_obj_t *second_meter = lv_lmeter_create(scr, NULL);
+    lv_lmeter_set_range(second_meter, 0, 60);
+    lv_lmeter_set_value(second_meter, 10);
+    lv_lmeter_set_scale(second_meter, 354, 60);
+    lv_lmeter_set_angle_offset(second_meter, 177);
+    lv_obj_set_size(second_meter, 230, 230);
+    lv_obj_align(second_meter, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_lmeter_set_style(second_meter, LV_LMETER_STYLE_MAIN, &style_lmeter);
+    ht->lv_second_meter = second_meter;
+
+    LOG_INFO("[home_screen]: Created line meter from %" PRIu16 " to %" PRIu16 ""
+             " with %" PRIu16 " lines\n",
+             lv_lmeter_get_min_value(second_meter),
+             lv_lmeter_get_max_value(second_meter),
+             lv_lmeter_get_line_count(second_meter));
+
+
 
     lv_obj_set_click(scr, true);
 
     lv_obj_set_event_cb(scr, _screen_time_pressed);
     lv_obj_set_event_cb(label1, _screen_time_pressed);
 
+    _screen_time_update_screen(&ht->widget);
     return scr;
+}
+
+
+static int _screen_time_update_screen(widget_t *widget)
+{
+    home_time_widget_t *ht = _from_widget(widget);
+
+    /* Set the correct style */
+    _swap_style(ht);
+
+    char time[6];
+    char date[15];
+    int res = snprintf(time, sizeof(time), "%02u:%02u\n", ht->time.hour,
+                       ht->time.minute);
+    if (res != sizeof(time)) {
+        LOG_ERROR("[home_time]: error formatting time string %*s\n", res, time);
+        return -1;
+    }
+    lv_label_set_text(ht->lv_time, time);
+
+    res = snprintf(date, sizeof(date), "%u %s %u\n", ht->time.dayofmonth,
+                   controller_time_month_get_short_name(&ht->time),
+                   ht->time.year);
+    if (res == sizeof(date)) {
+        LOG_ERROR("[home_time]: error formatting date string %*s\n", res, date);
+        return -1;
+    }
+    lv_label_set_text(ht->lv_date, date);
+    lv_lmeter_set_value(ht->lv_second_meter, ht->time.second+1);
+    return 0;
+}
+
+static int home_time_update_screen(widget_t *widget)
+{
+    if (widget_get_gui_lock(widget) == 0) {
+        return 0;
+    }
+    LOG_INFO("[home_screen]: updating drawing\n");
+    _screen_time_update_screen(widget);
+    widget_release_gui_lock(widget);
+    return 1;
 }
 
 int home_time_init(widget_t *widget)
 {
-    (void)widget;
+    home_time_widget_t *htwidget = _from_widget(widget);
+    widget_init_local(widget);
+    htwidget->handler.events = CONTROLLER_EVENT_FLAG(CONTROLLER_EVENT_TICK);
+    htwidget->handler.widget = widget;
+    controller_add_control_handler(controller_get(), &htwidget->handler);
     return 0;
 }
 
@@ -81,7 +179,7 @@ int home_time_draw(widget_t *widget, lv_obj_t *parent)
 {
     LOG_INFO("drawing time widget\n");
     home_time_widget_t *htwidget = _from_widget(widget);
-    htwidget->screen = screen_time_create();
+    htwidget->screen = screen_time_create(htwidget);
     return 0;
 }
 
@@ -99,10 +197,24 @@ int home_time_close(widget_t *widget)
     return 0;
 }
 
+int home_time_event(widget_t *widget, unsigned event)
+{
+    home_time_widget_t *htwidget = _from_widget(widget);
+    (void)htwidget;
+    widget_get_control_lock(widget);
+    if (event == CONTROLLER_EVENT_TICK) {
+        memcpy(&htwidget->time, controller_time_get_time(controller_get()), sizeof(controller_time_spec_t));
+    }
+    widget_release_control_lock(widget);
+    return 0;
+}
+
 static const widget_spec_t home_time_spec = {
     .name = "time",
     .init = home_time_init,
     .draw = home_time_draw,
     .container = home_time_get_container,
     .close = home_time_close,
+    .event = home_time_event,
+    .update_draw = home_time_update_screen,
 };
