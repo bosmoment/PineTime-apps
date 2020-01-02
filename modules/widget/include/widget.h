@@ -30,6 +30,8 @@ typedef widget_t* widget_map_t;
 typedef struct widget_spec {
     const char *name;
 
+    const char *label;  /**< Complex LVGL GUI label */
+
 /**
  * @brief Initialization function, called once on boot
  */
@@ -71,6 +73,12 @@ struct _widget {
     mutex_t update;
     bool dirty;
 };
+
+static inline const char *widget_get_label(const widget_t *widget)
+{
+    return widget->spec->label;
+}
+
 void widget_init_installed(void);
 
 int widget_get_gui_lock(widget_t *widget);
