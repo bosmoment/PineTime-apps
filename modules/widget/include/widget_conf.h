@@ -30,9 +30,9 @@ extern "C" {
 #define CONFIG_WIDGET_MENU WIDGET_MENU_TILES
 #endif /* CONFIG_WIDGET_MENU */
 
-const widget_map_t widgets_installed[] = {
-    WIDGET_HOME_TIME,
-    WIDGET_MENU_TILES,
+static const widget_map_t widgets_installed[] = {
+    CONFIG_WIDGET_HOME,
+    CONFIG_WIDGET_MENU,
 };
 
 #ifdef __cplusplus
