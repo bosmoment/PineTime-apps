@@ -35,8 +35,8 @@ static void _screen_menu_exit(lv_obj_t *obj, lv_event_t event)
     switch (event) {
         case LV_EVENT_CLICKED:
             LOG_INFO("Menu button press event\n");
-            controller_event_submit_input_event(&ht->widget,
-                                                CONTROLLER_EVENT_WIDGET_HOME);
+            controller_action_submit_input_action(&ht->widget,
+                                                CONTROLLER_ACTION_WIDGET_HOME);
         default:
             break;
     }
@@ -53,13 +53,18 @@ lv_obj_t *screen_menu_create(void)
     lv_obj_t *list_btn;
 
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE, "New");
+    assert(list_btn);
 
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_DIRECTORY, "Open");
+    assert(list_btn);
 
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_EDIT, "Edit");
+    assert(list_btn);
 
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_SAVE, "Save");
+    assert(list_btn);
     list_btn = lv_list_add_btn(list1, LV_SYMBOL_CLOSE, "Close");
+    assert(list_btn);
     lv_obj_set_event_cb(list_btn, _screen_menu_exit);
     (void)list_btn;
 
@@ -81,8 +86,8 @@ int menu_tiles_launch(widget_t *widget)
 
 int menu_tiles_draw(widget_t *widget, lv_obj_t *parent)
 {
-    menu_tiles_widget_t *htwidget = _from_widget(widget);
-    htwidget->screen = screen_menu_create();
+    menu_tiles_widget_t *mtwidget = _from_widget(widget);
+    mtwidget->screen = screen_menu_create();
     return 0;
 }
 
