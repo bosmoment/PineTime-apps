@@ -30,7 +30,7 @@ extern "C" {
 #define CONFIG_WIDGET_MENU WIDGET_MENU_TILES
 #endif /* CONFIG_WIDGET_MENU */
 
-static const widget_map_t widgets_installed[] = {
+const widget_map_t widgets_installed[] = {
     WIDGET_HOME_TIME,
     WIDGET_MENU_TILES,
 };

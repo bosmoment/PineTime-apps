@@ -22,11 +22,11 @@
 #include "widget.h"
 
 #define LVGL_THREAD_NAME    "lvgl"
-#define LVGL_THREAD_PRIO    4
+#define LVGL_THREAD_PRIO    6
 #define LVGL_STACKSIZE     (THREAD_STACKSIZE_LARGE)
 
 #define DISPATCHER_THREAD_NAME    "ph_disp"
-#define DISPATCHER_THREAD_PRIO    2
+#define DISPATCHER_THREAD_PRIO    5
 #define DISPATCHER_STACKSIZE     (THREAD_STACKSIZE_SMALL)
 
 #define GUI_BUF_SIZE             (LV_HOR_RES_MAX * 6)
@@ -122,7 +122,7 @@ static bool _input_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 /* Switch the screen displayed */
 static void _switch_widget_draw(gui_t *gui, widget_t *widget)
 {
-    LOG_INFO("switching screen to \"%s\"\n", widget->spec->name);
+    LOG_INFO("[GUI]: switching screen to \"%s\"\n", widget->spec->name);
     if (widget == gui->active_widget) {
         return;
     }
@@ -222,6 +222,11 @@ static void *_lvgl_thread(void* arg)
         }
         if (flag & GUI_THREAD_FLAG_LVGL_HANDLE) {
             lv_task_handler();
+            if (widget_is_dirty(gui->active_widget)) {
+                LOG_INFO("[GUI]: widget is dirty, updating\n");
+                widget_update_draw(gui->active_widget);
+            }
+
         }
         if (flag & GUI_THREAD_FLAG_IDLE) {
             /* idle handling */

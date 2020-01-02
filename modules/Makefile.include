@@ -1,3 +1,6 @@
+ifneq (,$(filter bleman,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/bleman
+endif
 ifneq (,$(filter gui,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/gui
 endif
@@ -14,4 +17,4 @@ ifneq (,$(filter widget,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/widget
 endif
 
-INCLUDES += $(addprefix -I, $(EXTERNAL_MODULE_DIRS))
+INCLUDES += $(addprefix -I, $(addsuffix /include, $(EXTERNAL_MODULE_DIRS)))

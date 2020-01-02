@@ -10,6 +10,7 @@
 
 #include <errno.h>
 #include "controller.h"
+#include "controller/time.h"
 #include "log.h"
 #include "xtimer.h"
 #include "gui.h"
@@ -29,7 +30,7 @@ static void _handle_input_event(event_t *event);
 typedef struct {
     ts_event_t super;
     widget_t *widget;
-    controller_event_widget_t event;
+    controller_action_widget_t action;
 } controller_widget_event_t;
 
 static controller_widget_event_t ev_widget = {
@@ -39,11 +40,11 @@ static controller_widget_event_t ev_widget = {
 static void _handle_input_event(event_t *event)
 {
     controller_widget_event_t *ev = (controller_widget_event_t*)event;
-    switch(ev->event) {
-        case CONTROLLER_EVENT_WIDGET_LEAVE:
+    switch(ev->action) {
+        case CONTROLLER_ACTION_WIDGET_LEAVE:
             gui_event_submit_switch_widget(widget_get_menu());
             break;
-        case CONTROLLER_EVENT_WIDGET_HOME:
+        case CONTROLLER_ACTION_WIDGET_HOME:
             gui_event_submit_switch_widget(widget_get_home());
             break;
         default:
@@ -52,16 +53,45 @@ static void _handle_input_event(event_t *event)
     ts_event_clear(&ev->super);
 }
 
-int controller_event_submit_input_event(widget_t *widget, controller_event_widget_t event)
+int controller_action_submit_input_action(widget_t *widget, controller_action_widget_t action)
 {
     if (ts_event_claim(&ev_widget.super) == -EBUSY) {
         return -EBUSY;
     }
     LOG_INFO("Submitting event\n");
     ev_widget.widget = widget;
-    ev_widget.event = event;
+    ev_widget.action = action;
     event_post(&_control.queue, &ev_widget.super.super);
     return 0;
+}
+
+void controller_add_control_handler(controller_t *controller, control_event_handler_t *handler)
+{
+    /* See note above for reasons against clist.h */
+    control_event_handler_t **last = &controller->handlers;
+    handler->next = NULL;
+    while (*last) {
+        last = &(*last)->next;
+    }
+    *last = handler;
+}
+
+static void _submit_events(controller_t *controller, controller_event_t event)
+{
+	printf("[controller]: event %u\n", (unsigned)event);
+    for (control_event_handler_t *handler = controller->handlers;
+         handler; handler = handler->next) {
+        if (handler->events & CONTROLLER_EVENT_FLAG(event)) {
+            LOG_INFO("[controller]: Submitting event %u to %s\n", (unsigned)event,
+                     handler->widget->spec->name);
+            handler->widget->spec->event(handler->widget, event);
+        }
+    }
+}
+
+controller_t *controller_get(void)
+{
+	return &_control;
 }
 
 int controller_thread_create(void)
@@ -74,15 +104,26 @@ int controller_thread_create(void)
 
 static void *_control_thread(void* arg)
 {
+    controller_t *controller = arg;
+    controller->pid = thread_getpid();
     event_queue_init(&_control.queue);
+	controller_time_init();
+
+    widget_init_installed();
+
     gui_event_submit_switch_widget(widget_get_home());
     while(1)
     {
         thread_flags_t flags = thread_flags_wait_any(
-            THREAD_FLAG_EVENT
+            THREAD_FLAG_EVENT | CONTROLLER_THREAD_FLAG_TICK
             );
+        /* Tick event from the RTC */
+        if (flags & CONTROLLER_THREAD_FLAG_TICK) {
+            controller_update_time(controller);
+            _submit_events(controller, CONTROLLER_EVENT_TICK);
+        }
         if (flags & THREAD_FLAG_EVENT) {
-            event_t *event = event_get(&_control.queue);
+            event_t *event = event_get(&controller->queue);
             if (event) {
                 event->handler(event);
             }

@@ -13,6 +13,7 @@
 #include "lvgl.h"
 #include "event.h"
 #include "ts_event.h"
+#include "mutex.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +56,10 @@ typedef struct widget_spec {
  */
     int (*close)(widget_t *widget);
 
+    int (*event)(widget_t *widget, unsigned event);
+
+    int (*update_draw)(widget_t *widget);
+
 /**
  * @brief Flags as defined above
  */
@@ -63,13 +68,31 @@ typedef struct widget_spec {
 
 struct _widget {
     const widget_spec_t *spec;
+    mutex_t update;
+    bool dirty;
 };
+void widget_init_installed(void);
+
+int widget_get_gui_lock(widget_t *widget);
+void widget_release_gui_lock(widget_t *widget);
+
+void widget_get_control_lock(widget_t *widget);
+
+void widget_release_control_lock(widget_t *widget);
 
 widget_t *widget_get_home(void);
 widget_t *widget_get_menu(void);
+void widget_init(widget_t *widget);
 int widget_launch(widget_t *widget);
 int widget_draw(widget_t *widget);
+int widget_update_draw(widget_t *widget);
 int widget_close(widget_t *widget);
+void widget_init_local(widget_t *widget);
+
+static inline bool widget_is_dirty(widget_t *widget)
+{
+    return widget->dirty == 1;
+}
 
 #ifdef __cplusplus
 }

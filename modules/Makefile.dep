@@ -1,10 +1,9 @@
+# Only depend on RIOT internal modules here
 ifneq (,$(filter gui,$(USEMODULE)))
   USEPKG += lvgl
   USEMODULE += xtimer
   USEMODULE += event
-  USEMODULE += util
-  USEMODULE += hal
-  
+
   USEMODULE += lvgl_core
   USEMODULE += lvgl_objx
   USEMODULE += lvgl_misc
@@ -16,8 +15,6 @@ ifneq (,$(filter gui,$(USEMODULE)))
 endif
 
 ifneq (,$(filter controller,$(USEMODULE)))
-  USEMODULE += widget
-  USEMODULE += util
 endif
 
 ifneq (,$(filter hal,$(USEMODULE)))
@@ -30,5 +27,20 @@ ifneq (,$(filter util,$(USEMODULE)))
 endif
 
 ifneq (,$(filter widget,$(USEMODULE)))
-  USEMODULE += util
+endif
+
+ifneq (,$(filter bleman,$(USEMODULE)))
+  USEPKG += nimble
+  USEMODULE += nimble_tinycrypt
+  USEMODULE += nimble_host_store_ram
+  USEMODULE += nimble_host
+  USEMODULE += nimble_controller
+  USEMODULE += nimble_svc_gap
+  USEMODULE += nimble_svc_gatt
+  USEMODULE += bluetil_ad
+
+  USEMODULE += core_thread_flags
+  USEMODULE += luid
+  USEMODULE += fmt
+  USEMODULE += event_timeout
 endif
