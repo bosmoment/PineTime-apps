@@ -104,9 +104,6 @@ static int _gatt_disc_svc_fn(uint16_t conn_handle,
     return 0;
 }
 
-//ble_gattc_disc_svc_by_uuid(uint16_t conn_handle, const ble_uuid_t *uuid,
-//                           ble_gatt_disc_svc_fn *cb, void *cb_arg)
-
 static void _sync_handler(event_t *event)
 {
     bleman_timesync_t *sync = container_of(event, bleman_timesync_t, ev);
