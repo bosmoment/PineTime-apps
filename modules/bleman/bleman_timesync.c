@@ -29,13 +29,15 @@ static int _time_result(uint16_t conn_handle, const struct ble_gatt_error *error
     (void)conn_handle;
     (void)arg;
     if (error->status) {
-        puts("[bleman_timesync] error retrieving current time");
+        LOG_ERROR("[bleman_timesync] error retrieving current time: %d\n", error->status);
         return 0;
     }
     bleman_timesync_ble_cts_t result;
     os_mbuf_copydata(attr->om, 0, sizeof(bleman_timesync_ble_cts_t), &result);
-    printf("Received data: %" PRIu16 "-%u-%u %02u:%02u:%02u\n", htons(result.year), result.month, result.dayofmonth,
-            result.hour, result.minute, result.second);
+    LOG_INFO("[bleman_timesync] Received data: "
+             "%" PRIu16 "-%u-%u %02u:%02u:%02u\n", htons(result.year),
+             result.month, result.dayofmonth,
+             result.hour, result.minute, result.second);
     controller_time_spec_t time;
     time.year = result.year;
     time.month = result.month - 1;

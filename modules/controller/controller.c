@@ -58,7 +58,7 @@ int controller_action_submit_input_action(widget_t *widget, controller_action_wi
     if (ts_event_claim(&ev_widget.super) == -EBUSY) {
         return -EBUSY;
     }
-    LOG_INFO("Submitting event\n");
+    LOG_DEBUG("[controller] Submitting widget action\n");
     ev_widget.widget = widget;
     ev_widget.action = action;
     event_post(&_control.queue, &ev_widget.super.super);
@@ -78,11 +78,10 @@ void controller_add_control_handler(controller_t *controller, control_event_hand
 
 static void _submit_events(controller_t *controller, controller_event_t event)
 {
-	printf("[controller]: event %u\n", (unsigned)event);
     for (control_event_handler_t *handler = controller->handlers;
          handler; handler = handler->next) {
         if (handler->events & CONTROLLER_EVENT_FLAG(event)) {
-            LOG_INFO("[controller]: Submitting event %u to %s\n", (unsigned)event,
+            LOG_DEBUG("[controller]: Submitting event %u to %s\n", (unsigned)event,
                      handler->widget->spec->name);
             handler->widget->spec->event(handler->widget, event);
         }

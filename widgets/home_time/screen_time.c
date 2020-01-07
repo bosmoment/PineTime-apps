@@ -152,7 +152,7 @@ static int home_time_update_screen(widget_t *widget)
     if (widget_get_gui_lock(widget) == 0) {
         return 0;
     }
-    LOG_INFO("[home_screen]: updating drawing\n");
+    LOG_DEBUG("[home_screen]: updating drawing\n");
     _screen_time_update_screen(widget);
     widget_release_gui_lock(widget);
     return 1;

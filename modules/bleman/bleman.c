@@ -8,6 +8,7 @@
 
 #include "bleman.h"
 #include "log/log.h"
+#include "log.h"
 #include "assert.h"
 #include "event/timeout.h"
 #include "nimble_riot.h"
@@ -113,7 +114,6 @@ static void _bleman_notify_handlers(struct ble_gap_event *event, bleman_t *blema
 static int _gap_event_cb(struct ble_gap_event *event, void *arg)
 {
     bleman_t *bleman = arg;
-
 
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
@@ -222,6 +222,8 @@ static void *_bleman_thread(void *arg)
 {
     int res = 0;
     bleman_t *bleman = arg;
+
+    LOG_INFO("[bleman] Initializing as thread no %u\n", (unsigned)sched_active_pid);
 
     _fill_serial(bleman);
     assert(bleman->serial);

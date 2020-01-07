@@ -213,17 +213,16 @@ static void *_lvgl_thread(void* arg)
         if (flag & THREAD_FLAG_EVENT) {
             event_t *ev = event_get(&gui->queue);
             if (ev) {
-                LOG_INFO("[GUI]: handling event\n");
                 ev->handler(ev);
             }
             else {
-                LOG_ERROR("[GUI]: No event\n");
+                LOG_ERROR("[GUI]: No event while flag set\n");
             }
         }
         if (flag & GUI_THREAD_FLAG_LVGL_HANDLE) {
             lv_task_handler();
             if (widget_is_dirty(gui->active_widget)) {
-                LOG_INFO("[GUI]: widget is dirty, updating\n");
+                LOG_DEBUG("[GUI]: widget is dirty, updating\n");
                 widget_update_draw(gui->active_widget);
             }
 
