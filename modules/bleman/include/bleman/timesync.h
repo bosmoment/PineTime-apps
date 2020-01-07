@@ -35,6 +35,7 @@ typedef struct {
     event_t ev;
     event_t start_chrs_ev;
     event_t start_read_ev;
+    bleman_event_handler_t handler;
     event_timeout_t timeout_ev;
     bleman_t *bleman;
     struct ble_gatt_svc time_svc;
