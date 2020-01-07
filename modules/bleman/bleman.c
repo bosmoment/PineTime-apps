@@ -102,6 +102,13 @@ static int _devinfo_handler(uint16_t conn_handle, uint16_t attr_handle,
     return (res == 0) ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
 }
 
+static void _bleman_notify_handlers(struct ble_gap_event *event, bleman_t *bleman)
+{
+    for (bleman_event_handler_t *handler = bleman->handlers; handler; handler = handler->next) {
+        handler->handler(bleman, event, handler->arg);
+    }
+}
+
 /* GAP events */
 static int _gap_event_cb(struct ble_gap_event *event, void *arg)
 {
@@ -119,14 +126,12 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
                 bleman->conn_handle = event->connect.conn_handle;
 
                 printf("[bleman] Connection established\n");
-                bleman_timesync_start_events(&_bleman_timesync);
             }
 
             break;
 
         case BLE_GAP_EVENT_DISCONNECT:
             //_stop_updating();
-            bleman_timesync_stop_events(&_bleman_timesync);
             bleman->conn_handle = 0;
             _start_advertising(bleman);
             break;
@@ -176,6 +181,7 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
         default:
             printf("[bleman]: unhandled event type: %u\n", event->type);
     }
+    _bleman_notify_handlers(event, bleman);
 
     return 0;
 }
@@ -201,6 +207,15 @@ static void _fill_serial(bleman_t *bleman)
     uint8_t serial_bytes[CONFIG_BLEMAN_SERIAL_LEN/2];
     luid_get(serial_bytes, sizeof(serial_bytes));
     fmt_bytes_hex(bleman->serial, serial_bytes, sizeof(serial_bytes));
+}
+
+void bleman_add_event_handler(bleman_t *bleman, bleman_event_handler_t *event,
+                              bleman_event_cb_t cb, void *arg)
+{
+    event->arg = arg;
+    event->handler = cb;
+    event->next = bleman->handlers;
+    bleman->handlers = event;
 }
 
 static void *_bleman_thread(void *arg)

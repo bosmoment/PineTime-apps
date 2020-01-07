@@ -9,6 +9,7 @@
 #ifndef APP_BLEMAN_H
 #define APP_BLEMAN_H
 
+#include "host/ble_gap.h"
 #include <stdint.h>
 #include "event.h"
 #include "ts_event.h"
@@ -44,15 +45,44 @@ extern "C" {
 #define CONFIG_BLEMAN_SERIAL_LEN    24
 #endif
 
+typedef struct _bleman bleman_t;
+typedef struct _bleman_event_handler bleman_event_handler_t;
 
-typedef struct _bleman {
+/**
+ * @brief event notification handler
+ *
+ * @param   event       NimBLE gap event
+ * @param   bleman      bleman context
+ * @param   arg         Extra argument passed to the call
+ */
+typedef void (*bleman_event_cb_t)(bleman_t *bleman, struct ble_gap_event *event,
+                                  void *arg);
+
+struct _bleman_event_handler {
+    struct _bleman_event_handler *next; /**< linked list iterator */
+    bleman_event_cb_t handler; /**< Handler function pointer */
+    void *arg; /**< Argument passed to the handler function call */
+};
+
+struct _bleman {
     char serial[CONFIG_BLEMAN_SERIAL_LEN];
     event_queue_t eq;
     uint16_t conn_handle;
-
-} bleman_t;
+    bleman_event_handler_t *handlers;
+};
 
 int bleman_thread_create(void);
+
+/**
+ * @brief Add a notification handler to the bleman thread
+ *
+ * @param   bleman  bleman context
+ * @param   event   event handler context to add
+ * @param   cb      callback function
+ * @param   arg     argument to add to the handler
+ */
+void bleman_add_event_handler(bleman_t *bleman, bleman_event_handler_t *event,
+                              bleman_event_cb_t cb, void *arg);
 
 #ifdef __cplusplus
 }
