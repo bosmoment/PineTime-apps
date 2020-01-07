@@ -237,6 +237,7 @@ static void *_bleman_thread(void *arg)
     bluetil_ad_init_with_flags(&ad, buf, sizeof(buf), BLUETIL_AD_FLAGS_DEFAULT);
     uint16_t hrs_uuid = BLE_GATT_SVC_HRS;
     bluetil_ad_add(&ad, BLE_GAP_AD_UUID16_INCOMP, &hrs_uuid, sizeof(hrs_uuid));
+    bluetil_ad_add_name(&ad, _device_name);
     ble_gap_adv_set_data(ad.buf, ad.pos);
 
     bleman_timesync_init(bleman, &_bleman_timesync);
