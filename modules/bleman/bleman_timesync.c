@@ -20,6 +20,7 @@
 
 #include "host/ble_hs.h"
 #include "host/ble_gatt.h"
+#include "host/ble_gap.h"
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
@@ -30,6 +31,11 @@ static int _time_result(uint16_t conn_handle, const struct ble_gatt_error *error
     (void)arg;
     if (error->status) {
         LOG_ERROR("[bleman_timesync] error retrieving current time: %d\n", error->status);
+        if (error->status == 261) {
+            /* auth required */
+            LOG_WARNING("[bleman_timesync]: Aggressively initiating security procedure after failed read\n");
+            ble_gap_security_initiate(conn_handle);
+        }
         return 0;
     }
     bleman_timesync_ble_cts_t result;
