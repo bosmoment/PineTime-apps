@@ -14,6 +14,7 @@
 #include "event.h"
 #include "ts_event.h"
 #include "mutex.h"
+#include "controller/structs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,7 +59,7 @@ typedef struct widget_spec {
  */
     int (*close)(widget_t *widget);
 
-    int (*event)(widget_t *widget, unsigned event);
+    int (*event)(widget_t *widget, controller_event_t event);
 
     int (*update_draw)(widget_t *widget);
 

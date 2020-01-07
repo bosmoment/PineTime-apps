@@ -197,7 +197,7 @@ int home_time_close(widget_t *widget)
     return 0;
 }
 
-int home_time_event(widget_t *widget, unsigned event)
+int home_time_event(widget_t *widget, controller_event_t event)
 {
     home_time_widget_t *htwidget = _from_widget(widget);
     (void)htwidget;

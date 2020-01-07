@@ -6,13 +6,14 @@
  * directory for more details.
  */
 
-#ifndef APP_CONTROLLER
-#define APP_CONTROLLER
+#ifndef APP_CONTROLLER_H
+#define APP_CONTROLLER_H
 
 #include <stdint.h>
 #include "event.h"
 #include "gui.h"
 #include "widget.h"
+#include "controller/structs.h"
 #include "controller/time.h"
 
 #ifdef __cplusplus
@@ -40,15 +41,6 @@ typedef struct {
     kernel_pid_t pid;
 } controller_t;
 
-typedef enum {
-    CONTROLLER_ACTION_WIDGET_LEAVE, /* Leave widget and return to menu */
-    CONTROLLER_ACTION_WIDGET_HOME, /* Return to home screen */
-} controller_action_widget_t;
-
-typedef enum {
-    CONTROLLER_EVENT_TICK,
-} controller_event_t;
-
 #define CONTROLLER_EVENT_FLAG(flag)     (1 << flag)
 
 controller_t *controller_get(void);
@@ -69,4 +61,4 @@ int controller_thread_create(void);
 }
 #endif
 
-#endif /* APP_CONTROLLER */
+#endif /* APP_CONTROLLER_H */
