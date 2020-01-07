@@ -3,13 +3,13 @@
 Friendly firmware applications for the Pinetime!
 
 This repository contains a number of applications and helper modules specific
-for the PineTime[1] open source smartwatch. 
+for the [PineTime] open source smartwatch. 
 
 Highlights:
 
-- Built on top of the RIOT[2] open source embedded operating system
-- Apache NimBLE[3] as an open-source bluetooth 5.0 stack.
-- LittlevGL[4] for the user interface.
+- Built on top of [RIOT], an open source embedded operating system
+- Apache [NimBLE] as an open-source bluetooth 5.0 stack.
+- [LittlevGL] for the user interface.
 
 ### Features
 
@@ -33,14 +33,18 @@ The project is separated into a number of directories:
 
 ### Getting started
 
-First follow the quick start guide from RIOT[5] to get familiar and validate your
-toolchain.
+First follow the [quick start] guide from RIOT to get familiar with RIOT's build
+system and validate your toolchain functionality.
 
 When checking out this repository, don't forget to initialize the RIOT submodule
-contained within: `git submodule init`.
+contained within this repository with: `git submodule update`.
 
 Applications are contained in the `apps` dir with a single application per
 directory. The `pinetime` application should give you a good starting point.
+
+Use `make all` in the application directory to build the firmware, `make flash`
+to flash it on the target and `make term` to get a serial connection to the
+device.
 
 Currently the Segger J-Link tools are used for flashing the application. It is
 possible to use a different programmer by overriding the settings in the
@@ -48,12 +52,15 @@ possible to use a different programmer by overriding the settings in the
 
 ### Tips
 
-- STDIO is implemented via the Segger RTT protocol. 
+- STDIO is implemented via the Segger RTT protocol. It is non-blocking by
+  default, blocking mode can be enabled by adding
+  `STDIO_RTT_ENABLE_BLOCKING_STDOUT` to the CFLAGS. **Note**: the firmware will
+  block (hang) on STDIO if no RTT client is attached.
 
 - The directory where a RIOT tree is expected can be overridden by setting the
   `RIOTBASE` variable in the application makefile or from the command line.
 
-- A fork of the Android GadgetBridge application is available here[6] with basic
+- A fork of the Android [GadgetBridge] application is available with basic
   support for this RIOT PineTime application.
 
 ### Planned features
@@ -63,11 +70,9 @@ possible to use a different programmer by overriding the settings in the
 - Persistent Bluetooth bonds
 - Secure over the air updates
 
-### Development
-
-[1]: https://www.pine64.org/pinetime/
-[2]: https://github.com/RIOT-os/RIOT/
-[3]: https://github.com/apache/mynewt-nimble
-[4]: https://github.com/littlevgl/lvgl
-[5]: https://doc.riot-os.org/index.html#the-quickest-start
-[6]: https://codeberg.org/bergzand/GadgetBridge
+[PineTIme]: https://www.pine64.org/pinetime/
+[RIOT]: https://github.com/RIOT-os/RIOT/
+[NimBLE]: https://github.com/apache/mynewt-nimble
+[LittleVGL]: https://github.com/littlevgl/lvgl
+[quick start]: https://doc.riot-os.org/index.html#the-quickest-start
+[GadgetBridge]: https://codeberg.org/bergzand/Gadgetbridge/src/branch/riotwatch/initial
