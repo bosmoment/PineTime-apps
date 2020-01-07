@@ -119,6 +119,7 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
                 bleman->conn_handle = event->connect.conn_handle;
 
                 printf("[bleman] Connection established\n");
+                bleman_timesync_start_events(&_bleman_timesync);
             }
 
             break;
@@ -164,7 +165,6 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
             printf("[ENC_CHANGE]: event status %d\n", event->enc_change.status);
             if (event->enc_change.status == 0) {
                 /* Secure connection */
-                bleman_timesync_start_events(&_bleman_timesync);
             }
             break;
         case BLE_GAP_EVENT_MTU:
