@@ -11,6 +11,13 @@ Highlights:
 - Apache [NimBLE] as an open-source bluetooth 5.0 stack.
 - [LittlevGL] for the user interface.
 
+#### Pre-build Binaries
+
+Fresh binaries from the CI:
+
+- [PineTime.elf](https://api.cirrus-ci.com/v1/artifact/github/bosmoment/PineTime-apps/build/binaries/PineTime.elf)
+- [PineTime.bin](https://api.cirrus-ci.com/v1/artifact/github/bosmoment/PineTime-apps/build/binaries/PineTime.bin)
+
 ### Features
 
 - *Bluetooth LE*: provided by Nimble
