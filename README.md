@@ -1,4 +1,4 @@
-## Bosmoment-style Pinetime firmware applications
+# Bosmoment-style Pinetime firmware applications
 
 Friendly firmware applications for the Pinetime!
 
@@ -11,14 +11,14 @@ Highlights:
 - Apache [NimBLE] as an open-source bluetooth 5.0 stack.
 - [LittlevGL] for the user interface.
 
-#### Pre-build Binaries
+### Pre-build Binaries
 
 Fresh binaries from the CI:
 
 - [PineTime.elf](https://api.cirrus-ci.com/v1/artifact/github/bosmoment/PineTime-apps/build/binaries/PineTime.elf)
 - [PineTime.bin](https://api.cirrus-ci.com/v1/artifact/github/bosmoment/PineTime-apps/build/binaries/PineTime.bin)
 
-### Features
+## Features
 
 - *Bluetooth LE*: provided by Nimble
 - *Bluetooth pairing support*
@@ -27,7 +27,7 @@ Fresh binaries from the CI:
 
 More to follow
 
-### Structure
+## Structure
 
 The project is separated into a number of directories:
 
@@ -38,14 +38,14 @@ The project is separated into a number of directories:
   PineTime, for example: a stopwatch widget; a configuration widget; a
   heartbeat graph widget.
 
-### Getting started
+## Getting started
 
-#### Repository setup
+### Repository setup
 
 When checking out this repository, don't forget to initialize the RIOT submodule
 contained within this repository with: `git submodule update`.
 
-#### Building applications
+### Building applications
 
 Applications are contained in the `apps` dir with a single application per
 directory. The `pinetime` application should give you a good starting point.
@@ -54,7 +54,7 @@ Use `make all` in the application directory to build the firmware, `make flash`
 to flash it on the target and `make term` to get a serial connection to the
 device. 
 
-#### Development
+### Development
 
 As the project is based on RIOT, it helps to get familiar with RIOT and check
 which functionality is provided by the OS.
@@ -66,7 +66,7 @@ Currently the Segger J-Link tools are used for flashing the application. It is
 possible to use a different programmer by overriding the settings in the
 `Makefile.include` for the `pinetime` board in the RIOT tree. 
 
-### Tips
+## Tips
 
 - STDIO is implemented via the Segger RTT protocol. It is non-blocking by
   default, blocking mode can be enabled by adding
@@ -79,7 +79,7 @@ possible to use a different programmer by overriding the settings in the
 - A fork of the Android [GadgetBridge] application is available with basic
   support for this RIOT PineTime application.
 
-### Planned features
+## Planned features
 
 - Device side Bluetooth key code confirmation (Only the host verifies the
   pairing code at the moment, the firmware always confirms the code as valid)
