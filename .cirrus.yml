@@ -1,0 +1,15 @@
+container:
+  image: riot/riotbuild
+  cpu: 2
+  memory: 512Mb
+
+build_task:
+  install_script:
+    - git submodule init
+    - git submodule update
+  build_script: 
+    - make -C apps/pinetime -j2 all
+    - cp apps/pinetime/bin/pinetime/PineTime.* .
+  binaries_artifacts:
+    path: "PineTime.*"
+    type: application/octet-stream
