@@ -1,3 +1,5 @@
+[![Build Status](https://api.cirrus-ci.com/github/bosmoment/PineTime-apps.svg)](https://cirrus-ci.com/github/bosmoment/PineTime-apps)
+
 # Bosmoment-style Pinetime firmware applications
 
 Friendly firmware applications for the Pinetime!
