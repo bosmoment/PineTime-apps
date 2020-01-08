@@ -33,18 +33,27 @@ The project is separated into a number of directories:
 
 ### Getting started
 
-First follow the [quick start] guide from RIOT to get familiar with RIOT's build
-system and validate your toolchain functionality.
+#### Repository setup
 
 When checking out this repository, don't forget to initialize the RIOT submodule
 contained within this repository with: `git submodule update`.
+
+#### Building applications
 
 Applications are contained in the `apps` dir with a single application per
 directory. The `pinetime` application should give you a good starting point.
 
 Use `make all` in the application directory to build the firmware, `make flash`
 to flash it on the target and `make term` to get a serial connection to the
-device.
+device. 
+
+#### Development
+
+As the project is based on RIOT, it helps to get familiar with RIOT and check
+which functionality is provided by the OS.
+There is a [quick start] guide available for RIOT to get familiar with RIOT's
+build system and to validate your toolchain functionality. Doxygen-based API
+documentation is also available there.
 
 Currently the Segger J-Link tools are used for flashing the application. It is
 possible to use a different programmer by overriding the settings in the
