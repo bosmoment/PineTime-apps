@@ -26,42 +26,84 @@ typedef widget_t* widget_map_t;
 /**
  * @brief widget specification map
  *
- * @note should be declared const
+ * @note should be declared const to have it reside in the MCU flash
  */
 typedef struct widget_spec {
+   /**
+    * @brief Simple name of the widget, must be printable on the console
+    */
     const char *name;
 
-    const char *label;  /**< Complex LVGL GUI label */
+/**
+ * @brief Complex LVGL GUI label, used in LVGL elements such as the menu.
+ *
+ * It is allowed to use unicode and special features described here:
+ * https://docs.littlevgl.com/en/html/overview/font.html
+ */
+    const char *label;
 
 /**
- * @brief Initialization function, called once on boot
+ * @brief Initialization function, called once on boot by the controller
+ *
+ * @param   widget  The widget context
  */
     int (*init)(widget_t *widget);
 
 /**
  * @brief Launch the widget
+ *
+ * This function is called by
  */
     int (*launch)(widget_t *widget);
 
 /**
- * @brief Draw the widget
+ * @brief Draw the full widget
+ *
+ * This function is called by the GUI when the widget is expected to draw the
+ * initial set of elements
+ *
+ * @param   parent  The parent object the widget must draw into
  */
     int (*draw)(widget_t *widget, lv_obj_t *parent);
 
 /**
+ * @brief update the drawings of the widget
+ *
+ * This function is called by the GUI when the widget signals that an update of
+ * the view is required to reflect the current state.
+ *
+ * It is possible and allowed to modify the full view, but usually only the data
+ * of the LVGL elements has to be modified.
+ *
+ * @param   widget  The widget context
+ */
+    int (*update_draw)(widget_t *widget);
+
+/**
  * @brief Retrieve the container drawn in
+ *
+ * @param   widget  The widget context
  */
     lv_obj_t *(*container)(widget_t *widget);
 
 /**
- * @brief forcefully close the widget due to external event,
+ * @brief The controller forcefully closed the widget due to external event,
  *        e.g. incomming phone call or alarm ring
+ *
+ * @param   widget  The widget context
  */
     int (*close)(widget_t *widget);
 
+/**
+ * @brief Event signals from the controller to the application, can be used to
+ * receive events relevant for the widget rendering.
+ *
+ * @note Events are only submitted to the widget when the widget is active.
+ *
+ * @param   widget  The widget context
+ * @param   event   The event
+ */
     int (*event)(widget_t *widget, controller_event_t event);
-
-    int (*update_draw)(widget_t *widget);
 
 /**
  * @brief Flags as defined above
