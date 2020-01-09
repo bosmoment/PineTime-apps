@@ -68,6 +68,38 @@ Currently the Segger J-Link tools are used for flashing the application. It is
 possible to use a different programmer by overriding the settings in the
 `Makefile.include` for the `pinetime` board in the RIOT tree. 
 
+## Bluetooth LE
+
+Currently the firmware is always advertising if no connection is active. As
+soon as a host connects to the PineTime, the advertising is stopped and
+continues when the host disconnects.
+
+Bonding is available and useable, but the bonds are not persistent between
+reboots. (see Planned features).
+
+A custom UUID is included in the advertisement to recognise the device by:
+```
+9851dc0a-b04a-1399-5646-3b38788cb1c5
+```
+
+This UUID can be used for Bluetooth LE filters in Android and such. The device
+name itself can be customized to your liking and is not used for identifying the
+device.
+
+### Companion phone app
+
+A fork of [GadgetBridge] is available with support for this firmware. The fork
+uses the custom UUID specified above to filter and identify the device.
+
+The GadgetBridge app should pick up the device when scanning and allow pairing
+with the device. As long as the PineTime remembers the bond, the app and the
+Pinetime should be able to restore the secure connection.
+
+The GadgetBridge fork is configured to only allow encrypted reads to the current
+time characteristic. The PineTime firmware automatically requests pairing when 
+it receives an insufficient encryption error back from the app when requesting
+the time.
+
 ## Tips
 
 - STDIO is implemented via the Segger RTT protocol. It is non-blocking by
