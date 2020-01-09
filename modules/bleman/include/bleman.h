@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #ifndef CONFIG_BLEMAN_DEVICE_NAME
-#define CONFIG_BLEMAN_DEVICE_NAME   "RIOT PineTime Smart Watch"
+#define CONFIG_BLEMAN_DEVICE_NAME   "RIOT Watch"
 #endif
 
 #ifndef CONFIG_BLEMAN_MANUF_NAME
@@ -43,6 +43,10 @@ extern "C" {
 
 #ifndef CONFIG_BLEMAN_SERIAL_LEN
 #define CONFIG_BLEMAN_SERIAL_LEN    24
+#endif
+
+#ifndef CONFIG_BLEMAN_PINETIME_UUID
+#define CONFIG_BLEMAN_PINETIME_UUID 0xc5, 0xb1, 0x8c, 0x78, 0x38, 0x3b, 0x46, 0x56, 0x99, 0x13, 0x4a, 0xb0, 0x0a, 0xdc, 0x51, 0x98
 #endif
 
 typedef struct _bleman bleman_t;

@@ -252,8 +252,8 @@ static void *_bleman_thread(void *arg)
     uint8_t buf[BLE_HS_ADV_MAX_SZ];
     bluetil_ad_t ad;
     bluetil_ad_init_with_flags(&ad, buf, sizeof(buf), BLUETIL_AD_FLAGS_DEFAULT);
-    uint16_t hrs_uuid = BLE_GATT_SVC_HRS;
-    bluetil_ad_add(&ad, BLE_GAP_AD_UUID16_INCOMP, &hrs_uuid, sizeof(hrs_uuid));
+    const ble_uuid128_t uuid = BLE_UUID128_INIT(CONFIG_BLEMAN_PINETIME_UUID);
+    bluetil_ad_add(&ad, BLE_GAP_AD_UUID128_INCOMP, &uuid.value, sizeof(uuid.value));
     bluetil_ad_add_name(&ad, _device_name);
     ble_gap_adv_set_data(ad.buf, ad.pos);
 

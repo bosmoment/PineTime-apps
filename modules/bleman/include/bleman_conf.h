@@ -21,6 +21,14 @@ extern "C" {
 /* GATT service definitions */
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = BLE_UUID128_DECLARE(CONFIG_BLEMAN_PINETIME_UUID),
+        .characteristics = (struct ble_gatt_chr_def[]) { {
+            0, /* no more characteristics in this service */
+        }, }
+
+    },
+    {
         /* Heart Rate Service */
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
         .uuid = BLE_UUID16_DECLARE(BLE_GATT_SVC_HRS),
