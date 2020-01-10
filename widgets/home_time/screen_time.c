@@ -13,9 +13,11 @@
 #include "gui.h"
 #include "controller.h"
 #include "kernel_defines.h"
+#include "bleman.h"
 
 static const widget_spec_t home_time_spec;
 static lv_style_t style_lmeter;
+static lv_style_t style_icons;
 
 static int _screen_time_update_screen(widget_t *widget);
 unsigned hours = 19;
@@ -24,6 +26,13 @@ unsigned seconds = 20;
 /* Widget context */
 home_time_widget_t home_time_widget = {
     .widget = {.spec = &home_time_spec }
+};
+
+static const uint32_t _state2color[] = {
+    [BLEMAN_BLE_STATE_INACTIVE] = 0x00,
+    [BLEMAN_BLE_STATE_DISCONNECTED] = 0x00,
+    [BLEMAN_BLE_STATE_ADVERTISING] = 0x007BA7, /* Cerulean */
+    [BLEMAN_BLE_STATE_CONNECTED] = 0x138808, /* India green */
 };
 
 static inline home_time_widget_t *_from_widget(widget_t *widget)
@@ -66,12 +75,6 @@ static void _swap_style(home_time_widget_t *ht)
 lv_obj_t *screen_time_create(home_time_widget_t *ht)
 {
     lv_obj_t *scr = lv_obj_create(NULL, NULL);
-    lv_style_copy(&style_lmeter, &lv_style_pretty_color);
-    style_lmeter.line.width = 3;
-    style_lmeter.line.color = LV_COLOR_SILVER;
-    style_lmeter.body.main_color = LV_COLOR_OLIVE;
-    style_lmeter.body.grad_color = LV_COLOR_OLIVE;
-
 
     lv_obj_t * label1 = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label1, LV_LABEL_LONG_BREAK);
@@ -81,6 +84,16 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);
     lv_obj_align(label1, scr, LV_ALIGN_CENTER, 0, 0);
     ht->lv_time = label1;
+
+    lv_obj_t * l_state = lv_label_create(scr, NULL);
+    lv_obj_set_width(l_state, 30);
+    lv_obj_set_height(l_state, 20);
+    lv_label_set_text(l_state, "");
+    lv_label_set_recolor(l_state, true);
+    //lv_label_set_style(l_state, LV_LABEL_STYLE_MAIN, &style_icons);
+    lv_label_set_align(l_state, LV_LABEL_ALIGN_LEFT);
+    lv_obj_align(l_state, scr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    ht->ble_state = l_state;
 
     lv_obj_t * label_date = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label_date, LV_LABEL_LONG_BREAK);
@@ -117,6 +130,20 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     return scr;
 }
 
+static void _home_time_set_bt_label(home_time_widget_t *htwidget)
+{
+    bleman_ble_state_t state = bleman_get_conn_state(bleman_get(), NULL);
+
+    if (state == BLEMAN_BLE_STATE_DISCONNECTED ) {
+        lv_label_set_text(htwidget->ble_state, "");
+    }
+    else {
+        uint32_t color = _state2color[state];
+        lv_label_set_text_fmt(htwidget->ble_state,
+                              "#%06" PRIx32 " " LV_SYMBOL_BLUETOOTH"#",
+                              color);
+    }
+}
 
 static int _screen_time_update_screen(widget_t *widget)
 {
@@ -162,8 +189,19 @@ int home_time_init(widget_t *widget)
 {
     home_time_widget_t *htwidget = _from_widget(widget);
     widget_init_local(widget);
-    htwidget->handler.events = CONTROLLER_EVENT_FLAG(CONTROLLER_EVENT_TICK);
+    htwidget->handler.events = CONTROLLER_EVENT_FLAG(CONTROLLER_EVENT_TICK) |
+                               CONTROLLER_EVENT_FLAG(CONTROLLER_EVENT_BLUETOOTH);
     htwidget->handler.widget = widget;
+
+    /* Styles */
+    lv_style_copy(&style_lmeter, &lv_style_pretty_color);
+    lv_style_copy(&style_icons, lv_theme_get_night()->style.label.prim);
+    style_lmeter.line.width = 3;
+    style_lmeter.line.color = LV_COLOR_SILVER;
+    style_lmeter.body.main_color = LV_COLOR_OLIVE;
+    style_lmeter.body.grad_color = LV_COLOR_OLIVE;
+    style_icons.text.font = &lv_font_roboto_16;
+
     controller_add_control_handler(controller_get(), &htwidget->handler);
     return 0;
 }
@@ -200,11 +238,15 @@ int home_time_close(widget_t *widget)
 int home_time_event(widget_t *widget, controller_event_t event)
 {
     home_time_widget_t *htwidget = _from_widget(widget);
-    (void)htwidget;
     widget_get_control_lock(widget);
     if (event == CONTROLLER_EVENT_TICK) {
         memcpy(&htwidget->time, controller_time_get_time(controller_get()), sizeof(controller_time_spec_t));
     }
+#ifdef MODULE_BLEMAN
+    if (event == CONTROLLER_EVENT_BLUETOOTH) {
+        _home_time_set_bt_label(htwidget)
+    }
+#endif
     widget_release_control_lock(widget);
     return 0;
 }
