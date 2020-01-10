@@ -17,7 +17,6 @@
 
 static const widget_spec_t home_time_spec;
 static lv_style_t style_lmeter;
-static lv_style_t style_icons;
 
 static int _screen_time_update_screen(widget_t *widget);
 unsigned hours = 19;
@@ -90,7 +89,6 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_obj_set_height(l_state, 20);
     lv_label_set_text(l_state, "");
     lv_label_set_recolor(l_state, true);
-    //lv_label_set_style(l_state, LV_LABEL_STYLE_MAIN, &style_icons);
     lv_label_set_align(l_state, LV_LABEL_ALIGN_LEFT);
     lv_obj_align(l_state, scr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     ht->ble_state = l_state;
@@ -195,12 +193,10 @@ int home_time_init(widget_t *widget)
 
     /* Styles */
     lv_style_copy(&style_lmeter, &lv_style_pretty_color);
-    lv_style_copy(&style_icons, lv_theme_get_night()->style.label.prim);
     style_lmeter.line.width = 3;
     style_lmeter.line.color = LV_COLOR_SILVER;
     style_lmeter.body.main_color = LV_COLOR_OLIVE;
     style_lmeter.body.grad_color = LV_COLOR_OLIVE;
-    style_icons.text.font = &lv_font_roboto_16;
 
     controller_add_control_handler(controller_get(), &htwidget->handler);
     return 0;
