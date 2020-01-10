@@ -15,12 +15,16 @@
 #include "widget.h"
 #include "controller/structs.h"
 #include "controller/time.h"
+#ifdef MODULE_BLEMAN
+#include "bleman.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define CONTROLLER_THREAD_FLAG_TICK (1 << 8)
+#define CONTROLLER_THREAD_FLAG_BLUETOOTH (1 << 9)
 
 typedef struct control_event_handler control_event_handler_t;
 
@@ -36,6 +40,9 @@ typedef struct {
     uint32_t last_update;               /* Last RTC counter value */
     bool time_in_sync;                  /* If the time is synced at least once a day */
     gui_screen_t cur_screen;
+#ifdef MODULE_BLEMAN
+    bleman_event_handler_t handler;
+#endif
     widget_t *active_widget;
     control_event_handler_t *handlers;
     kernel_pid_t pid;

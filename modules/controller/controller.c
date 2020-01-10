@@ -16,6 +16,11 @@
 #include "gui.h"
 #include "ts_event.h"
 
+#ifdef MODULE_BLEMAN
+#include "bleman.h"
+#include "host/ble_gap.h"
+#endif
+
 #define CONTROLLER_THREAD_NAME    "controller"
 #define CONTROLLER_THREAD_PRIO    6
 #define CONTROLLER_STACKSIZE      (THREAD_STACKSIZE_DEFAULT)
@@ -88,6 +93,15 @@ static void _submit_events(controller_t *controller, controller_event_t event)
     }
 }
 
+#ifdef MODULE_BLEMAN
+static void _bleman_control_event_cb(bleman_t *bleman, struct ble_gap_event *event,
+                                     void *arg)
+{
+    controller_t *controller = arg;
+    thread_flags_set((thread_t*)sched_threads[controller->pid], CONTROLLER_THREAD_FLAG_BLUETOOTH);
+}
+#endif
+
 controller_t *controller_get(void)
 {
 	return &_control;
@@ -107,6 +121,10 @@ static void *_control_thread(void* arg)
     controller->pid = thread_getpid();
     event_queue_init(&_control.queue);
 	controller_time_init();
+#ifdef MODULE_BLEMAN
+    bleman_add_event_handler(bleman_get(), &controller->handler,
+                             _bleman_control_event_cb, controller);
+#endif
 
     widget_init_installed();
 
@@ -114,12 +132,15 @@ static void *_control_thread(void* arg)
     while(1)
     {
         thread_flags_t flags = thread_flags_wait_any(
-            THREAD_FLAG_EVENT | CONTROLLER_THREAD_FLAG_TICK
+            THREAD_FLAG_EVENT | CONTROLLER_THREAD_FLAG_TICK | CONTROLLER_THREAD_FLAG_BLUETOOTH
             );
         /* Tick event from the RTC */
         if (flags & CONTROLLER_THREAD_FLAG_TICK) {
             controller_update_time(controller);
             _submit_events(controller, CONTROLLER_EVENT_TICK);
+        }
+        if (flags & CONTROLLER_THREAD_FLAG_BLUETOOTH) {
+            _submit_events(controller, CONTROLLER_EVENT_BLUETOOTH);
         }
         if (flags & THREAD_FLAG_EVENT) {
             event_t *event = event_get(&controller->queue);

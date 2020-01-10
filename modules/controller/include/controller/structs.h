@@ -30,6 +30,7 @@ typedef enum {
  */
 typedef enum {
     CONTROLLER_EVENT_TICK, /**< Time tick event (1 sec) */
+    CONTROLLER_EVENT_BLUETOOTH, /**< Bluetooth state changed */
 } controller_event_t;
 /** @} */
 
