@@ -244,7 +244,7 @@ int home_time_event(widget_t *widget, controller_event_t event)
     }
 #ifdef MODULE_BLEMAN
     if (event == CONTROLLER_EVENT_BLUETOOTH) {
-        _home_time_set_bt_label(htwidget)
+        _home_time_set_bt_label(htwidget);
     }
 #endif
     widget_release_control_lock(widget);
