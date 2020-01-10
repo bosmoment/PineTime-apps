@@ -124,6 +124,7 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
             }
             else {
                 bleman->conn_handle = event->connect.conn_handle;
+                bleman->state = BLEMAN_BLE_STATE_CONNECTED;
 
                 printf("[bleman] Connection established\n");
             }
@@ -131,7 +132,7 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
             break;
 
         case BLE_GAP_EVENT_DISCONNECT:
-            //_stop_updating();
+            bleman->state = BLEMAN_BLE_STATE_DISCONNECTED;
             bleman->conn_handle = 0;
             _start_advertising(bleman);
             break;
@@ -195,6 +196,7 @@ static void _start_advertising(bleman_t *bleman)
     advp.disc_mode = BLE_GAP_DISC_MODE_GEN;
     advp.itvl_min  = BLE_GAP_ADV_FAST_INTERVAL1_MIN;
     advp.itvl_max  = BLE_GAP_ADV_FAST_INTERVAL1_MAX;
+    bleman->state = BLEMAN_BLE_STATE_ADVERTISING;
     int res = ble_gap_adv_start(nimble_riot_own_addr_type, NULL, BLE_HS_FOREVER,
                                 &advp, _gap_event_cb, bleman);
     if (res != 0) {
@@ -216,6 +218,17 @@ void bleman_add_event_handler(bleman_t *bleman, bleman_event_handler_t *event,
     event->handler = cb;
     event->next = bleman->handlers;
     bleman->handlers = event;
+}
+
+bleman_t *bleman_get(void)
+{
+    return &_bleman;
+}
+
+bleman_ble_state_t bleman_get_conn_state(bleman_t *bleman, struct ble_gap_conn_desc *state)
+{
+    ble_gap_conn_find(bleman->conn_handle, state);
+    return bleman->state;
 }
 
 static void *_bleman_thread(void *arg)

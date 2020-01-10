@@ -62,6 +62,13 @@ typedef struct _bleman_event_handler bleman_event_handler_t;
 typedef void (*bleman_event_cb_t)(bleman_t *bleman, struct ble_gap_event *event,
                                   void *arg);
 
+typedef enum {
+    BLEMAN_BLE_STATE_INACTIVE,
+    BLEMAN_BLE_STATE_ADVERTISING,
+    BLEMAN_BLE_STATE_DISCONNECTED,
+    BLEMAN_BLE_STATE_CONNECTED,
+} bleman_ble_state_t;
+
 struct _bleman_event_handler {
     struct _bleman_event_handler *next; /**< linked list iterator */
     bleman_event_cb_t handler; /**< Handler function pointer */
@@ -73,9 +80,13 @@ struct _bleman {
     event_queue_t eq;
     uint16_t conn_handle;
     bleman_event_handler_t *handlers;
+    bleman_ble_state_t state;
 };
 
 int bleman_thread_create(void);
+
+bleman_t *bleman_get(void);
+bleman_ble_state_t bleman_get_conn_state(bleman_t *bleman, struct ble_gap_conn_desc *state);
 
 /**
  * @brief Add a notification handler to the bleman thread
