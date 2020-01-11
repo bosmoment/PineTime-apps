@@ -5,6 +5,8 @@ RIOTBASE ?= $(PINETIMEBASE)/RIOT
 WIDGETDIR ?= $(PINETIMEBASE)/widgets
 PINEMODULEDIR ?= $(PINETIMEBASE)/modules
 
+include $(PINETIMEBASE)/default_modules.mk
+
 # Ensures the Makefile.dep is used in the dependency resolution
 #
 EXTERNAL_MODULE_DIRS += $(PINEMODULEDIR)
