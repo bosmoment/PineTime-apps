@@ -25,6 +25,7 @@ Fresh binaries from the CI:
 - *Bluetooth LE*: provided by Nimble
 - *Bluetooth pairing support*
 - *Time synchronisation*: Bluetooth GATT Current Time Service client
+- *Time keeping*: nRF52832 RTC for ticks per second time/date updates
 - *Graphical user interface*: via LittleVGL.
 
 More to follow
