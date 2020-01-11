@@ -91,7 +91,7 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_label_set_recolor(l_state, true);
     lv_label_set_align(l_state, LV_LABEL_ALIGN_LEFT);
     lv_obj_align(l_state, scr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
-    ht->ble_state = l_state;
+    ht->lv_ble = l_state;
 
     lv_obj_t * label_date = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label_date, LV_LABEL_LONG_BREAK);
@@ -130,14 +130,13 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
 
 static void _home_time_set_bt_label(home_time_widget_t *htwidget)
 {
-    bleman_ble_state_t state = bleman_get_conn_state(bleman_get(), NULL);
 
-    if (state == BLEMAN_BLE_STATE_DISCONNECTED ) {
-        lv_label_set_text(htwidget->ble_state, "");
+    if (htwidget->ble_state == BLEMAN_BLE_STATE_DISCONNECTED ) {
+        lv_label_set_text(htwidget->lv_ble, "");
     }
     else {
-        uint32_t color = _state2color[state];
-        lv_label_set_text_fmt(htwidget->ble_state,
+        uint32_t color = _state2color[htwidget->ble_state];
+        lv_label_set_text_fmt(htwidget->lv_ble,
                               "#%06" PRIx32 " " LV_SYMBOL_BLUETOOTH"#",
                               color);
     }
@@ -169,6 +168,7 @@ static int _screen_time_update_screen(widget_t *widget)
     }
     lv_label_set_text(ht->lv_date, date);
     lv_lmeter_set_value(ht->lv_second_meter, ht->time.second+1);
+    _home_time_set_bt_label(ht);
     return 0;
 }
 
@@ -240,7 +240,7 @@ int home_time_event(widget_t *widget, controller_event_t event)
     }
 #ifdef MODULE_BLEMAN
     if (event == CONTROLLER_EVENT_BLUETOOTH) {
-        _home_time_set_bt_label(htwidget);
+        htwidget->ble_state = bleman_get_conn_state(bleman_get(), NULL);
     }
 #endif
     widget_release_control_lock(widget);

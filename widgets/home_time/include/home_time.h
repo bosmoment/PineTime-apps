@@ -24,7 +24,8 @@ typedef struct _home_time_widget {
     lv_obj_t *lv_time;
     lv_obj_t *lv_date;
     lv_obj_t *lv_second_meter;
-    lv_obj_t *ble_state;
+    lv_obj_t *lv_ble;
+    bleman_ble_state_t ble_state;
     /* Shared storage between gui and control */
     controller_time_spec_t time;
 } home_time_widget_t;
