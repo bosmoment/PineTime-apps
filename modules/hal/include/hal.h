@@ -34,6 +34,7 @@ display_t *hal_display_get_context(void);
 void hal_init(void);
 void hal_display_on(void);
 void hal_display_off(void);
+void hal_set_button_cb(gpio_cb_t cb, void *arg);
 
 #ifdef __cplusplus
 }

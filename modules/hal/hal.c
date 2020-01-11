@@ -8,6 +8,7 @@
 
 #include "hal.h"
 #include "log.h"
+#include "board.h"
 
 #include "ili9341.h"
 #include "ili9341_params.h"
@@ -25,7 +26,9 @@ void *hal_display_get_context(void)
 
 void hal_display_off(void)
 {
-    ili9341_set_brightness(hal_display_get_context(), 0x00);
+    gpio_set(LCD_BACKLIGHT_LOW);
+    gpio_set(LCD_BACKLIGHT_MID);
+    gpio_set(LCD_BACKLIGHT_HIGH);
     ili9341_sleep_mode(hal_display_get_context(), true);
     display_on = false;
 }
@@ -33,14 +36,19 @@ void hal_display_off(void)
 void hal_display_on(void)
 {
     ili9341_sleep_mode(hal_display_get_context(), false);
-    ili9341_set_brightness(hal_display_get_context(), 0xff);
     display_on = true;
+    /* Low brightness for now */
+    gpio_clear(LCD_BACKLIGHT_LOW);
 }
 
 /* Should be called somewhere during auto_init */
 void hal_init(void)
 {
+    gpio_set(VIBRATOR);
     if (ili9341_init(&_disp_dev, &ili9341_params[0]) == 0) {
+        ili9341_invert_on(&_disp_dev);
+        //ili9341_set_brightness(&_disp_dev, 0xff);
+        hal_display_on();
         LOG_INFO("[ILI9341]: OK!\n");
         display_on = true;
     }
@@ -53,4 +61,12 @@ void hal_init(void)
     else {
         LOG_ERROR("[XPT2046]: Device initialization failed\n");
     }
+
+}
+
+void hal_set_button_cb(gpio_cb_t cb, void *arg)
+{
+    gpio_init(BUTTON0, GPIO_OUT);
+    gpio_clear(BUTTON0);
+    gpio_init_int(BUTTON0_ENABLE, GPIO_IN_PU, GPIO_FALLING, cb, arg);
 }
