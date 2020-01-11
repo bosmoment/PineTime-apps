@@ -19,6 +19,7 @@
 #include "hal_input.h"
 #include "gui.h"
 #include "gui/dispatcher.h"
+#include "gui/theme.h"
 #include "ts_event.h"
 #include "widget.h"
 
@@ -146,7 +147,7 @@ static void *_lvgl_thread(void* arg)
     gui->lvgl_loop.callback = _gui_lvgl_trigger;
     gui->lvgl_loop.arg = gui;
 
-    lv_theme_t *th = lv_theme_night_init(10, NULL);
+    lv_theme_t *th = gui_theme_init(10, NULL);
     lv_theme_set_current(th);
 
     event_queue_claim(&gui->queue);
