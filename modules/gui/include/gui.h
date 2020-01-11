@@ -6,8 +6,8 @@
  * directory for more details.
  */
 
-#ifndef APP_GUI
-#define APP_GUI
+#ifndef _APP_GUI_H
+#define _APP_GUI_H
 
 #include <stdint.h>
 #include "lvgl.h"
@@ -76,4 +76,4 @@ int gui_event_submit_switch_widget(widget_t *widget);
 }
 #endif
 
-#endif /* APP_HAL */
+#endif /* _APP_GUI_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Koen Zandberg <koen@bergzand.net>
+ * Copyright (C) 2020 Koen Zandberg <koen@bergzand.net>
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -18,16 +18,13 @@
 #include "hal.h"
 #include "hal_input.h"
 #include "gui.h"
+#include "gui/dispatcher.h"
 #include "ts_event.h"
 #include "widget.h"
 
 #define LVGL_THREAD_NAME    "lvgl"
 #define LVGL_THREAD_PRIO    6
 #define LVGL_STACKSIZE     (THREAD_STACKSIZE_LARGE)
-
-#define DISPATCHER_THREAD_NAME    "ph_disp"
-#define DISPATCHER_THREAD_PRIO    5
-#define DISPATCHER_STACKSIZE     (THREAD_STACKSIZE_SMALL)
 
 #define GUI_BUF_SIZE             (LV_HOR_RES_MAX * 6)
 
@@ -36,11 +33,7 @@
 #define GUI_THREAD_FLAG_WAKE           (1 << 7)
 
 static void *_lvgl_thread(void* arg);
-static void *_lvgl_dispatcher(void *arg);
 static char _stack[LVGL_STACKSIZE];
-static char _dispatch_stack[DISPATCHER_STACKSIZE];
-
-static void dispatch_display_flush(event_t *event);
 
 static gui_t _gui;
 
@@ -49,16 +42,6 @@ static hal_input_coord_t _coord;
 
 static lv_color_t _buf1[GUI_BUF_SIZE];
 static lv_color_t _buf2[GUI_BUF_SIZE];
-
-/* Buffer flush events */
-static gui_flush_event_t ev[2] = {
-    {
-        .super = { .handler = dispatch_display_flush, },
-    },
-    {
-        .super = { .handler = dispatch_display_flush, },
-    }
-};
 
 extern lv_obj_t *screen_time_create(void);
 extern lv_obj_t *screen_menu_create(void);
@@ -69,35 +52,9 @@ static gui_event_widget_switch_t ev_sw = {
     .super = { .super = { .handler = _gui_event_switch_widget_draw} }
 };
 
-static event_queue_t _queue;
-
 gui_t *gui_get_ctx(void)
 {
     return &_gui;
-}
-
-static void _display_flush_cb(struct _disp_drv_t * disp_drv,
-                              const lv_area_t * area, lv_color_t * color_p)
-{
-
-    gui_flush_event_t *flush_event = NULL;
-    for (size_t i = 0; i < ARRAY_SIZE(ev); i++) {
-        if (ev[i].used == 0) {
-            flush_event = &ev[i];
-            break;
-        }
-    }
-    assert(flush_event);
-
-    flush_event->used = 1;
-    flush_event->x1 = area->x1;
-    flush_event->x2 = area->x2;
-    flush_event->y1 = area->y1;
-    flush_event->y2 = area->y2;
-    flush_event->map = (uint16_t*)color_p;
-    flush_event->drv = disp_drv;
-    event_post(&_queue, (event_t*)flush_event);
-    /* Dispatch event */
 }
 
 static bool _input_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
@@ -160,7 +117,7 @@ int lvgl_thread_create(void)
     lv_disp_drv_init(&gui->disp_drv);            /*Basic initialization*/
     lv_indev_drv_init(&gui->indev_drv);
 
-    gui->disp_drv.flush_cb = _display_flush_cb;
+    gui_dispatcher_thread_create(gui);
     gui->disp_drv.buffer = &gui->disp_buf;
     gui->indev_drv.type = LV_INDEV_TYPE_POINTER;
     gui->indev_drv.read_cb = _input_read_cb;
@@ -168,12 +125,7 @@ int lvgl_thread_create(void)
     gui->display = lv_disp_drv_register(&gui->disp_drv);
     lv_indev_drv_register(&gui->indev_drv);
 
-    int res = thread_create(_dispatch_stack, DISPATCHER_STACKSIZE,
-                            DISPATCHER_THREAD_PRIO,
-                            THREAD_CREATE_STACKTEST, _lvgl_dispatcher,
-                            (void *)_lvgl_dispatcher, DISPATCHER_THREAD_NAME);
-
-    res = thread_create(_stack, LVGL_STACKSIZE, LVGL_THREAD_PRIO,
+    int res = thread_create(_stack, LVGL_STACKSIZE, LVGL_THREAD_PRIO,
                             THREAD_CREATE_STACKTEST, _lvgl_thread,
                             gui, LVGL_THREAD_NAME);
     return res;
@@ -233,25 +185,5 @@ static void *_lvgl_thread(void* arg)
     }
     assert(false);
     /* should be never reached */
-    return NULL;
-}
-
-static void dispatch_display_flush(event_t *event)
-{
-    gui_flush_event_t *flush_event =
-        (gui_flush_event_t*)event;
-
-    hal_display_flush(hal_display_get_context(),
-                      flush_event->x1, flush_event->x2,
-                      flush_event->y1, flush_event->y2,
-                      flush_event->map);
-    flush_event->used = 0;
-    lv_disp_flush_ready(flush_event->drv);
-}
-
-static void *_lvgl_dispatcher(void *arg)
-{
-    event_queue_init(&_queue);
-    event_loop(&_queue);
     return NULL;
 }
