@@ -46,7 +46,7 @@ static int _time_result(uint16_t conn_handle, const struct ble_gatt_error *error
              result.hour, result.minute, result.second);
     controller_time_spec_t time;
     time.year = result.year;
-    time.month = result.month - 1;
+    time.month = result.month;
     time.dayofmonth = result.dayofmonth; /* Bluetooth spec defines Jan as 1 */
     time.hour = result.hour;
     time.minute = result.minute;

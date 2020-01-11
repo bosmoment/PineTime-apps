@@ -36,7 +36,8 @@ static const unsigned mon_lengths[2][MONSPERYEAR] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-static const char *mon_short_names[MONSPERYEAR] = {
+static const char *mon_short_names[MONSPERYEAR + 1] = {
+    [0] = "Inv",
     "Jan",
     "Feb",
     "Mar",
@@ -51,7 +52,8 @@ static const char *mon_short_names[MONSPERYEAR] = {
     "Dec",
 };
 
-static const char *mon_long_names[MONSPERYEAR] = {
+static const char *mon_long_names[MONSPERYEAR + 1] = {
+    [0] = "Invalid",
     "January",
     "February",
     "March",
@@ -142,12 +144,12 @@ void controller_update_time(controller_t *controller)
             if (ts->hour >= HOURSPERDAY) {
                 ts->hour = 0;
                 ts->dayofmonth++;
-                if (ts->dayofmonth >= mon_lengths[isleap(ts->year)][ts->month]) {
-                    ts->dayofmonth = 0;
+                if (ts->dayofmonth > mon_lengths[isleap(ts->year)][ts->month]) {
+                    ts->dayofmonth = 1;
                     ts->month++;
-                    if (ts->month >= MONSPERYEAR) {
+                    if (ts->month > MONSPERYEAR) {
                         ts->year++;
-                        ts->month = 0;
+                        ts->month = 1;
                     }
                 }
             }
