@@ -22,6 +22,7 @@
 #include "gui/theme.h"
 #include "ts_event.h"
 #include "widget.h"
+#include "event/timeout.h"
 
 #define LVGL_THREAD_NAME    "lvgl"
 #define LVGL_THREAD_PRIO    6
@@ -139,6 +140,31 @@ static void _gui_lvgl_trigger(void *arg)
     xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
 }
 
+static void _gui_button_irq(void *arg)
+{
+    gui_t *gui = (gui_t*)arg;
+    /* Button pressed */
+    puts("[gui] BUTTON!");
+    event_post(&gui->queue, &gui->button_press);
+}
+
+static void _gui_button_event(event_t *event)
+{
+    gui_t *gui = container_of(event, gui_t, button_press);
+    LOG_INFO("[gui] Screen on\n");
+    hal_display_on();
+    event_timeout_clear(&gui->screen_timeout_ev);
+    event_timeout_set(&gui->screen_timeout_ev, CONFIG_GUI_SCREEN_TIMEOUT);
+}
+
+static void _gui_screen_timeout(event_t *event)
+{
+    LOG_INFO("[gui] Screen off after timeout\n");
+    gui_t *gui = container_of(event, gui_t, screen_timeout);
+    (void)gui;
+    hal_display_off();
+}
+
 static void *_lvgl_thread(void* arg)
 {
     gui_t *gui = (gui_t*)arg;
@@ -152,6 +178,14 @@ static void *_lvgl_thread(void* arg)
 
     event_queue_claim(&gui->queue);
 
+    /* Button events */
+    gui->button_press.handler = _gui_button_event;
+    gui->screen_timeout.handler = _gui_screen_timeout;
+    event_timeout_init(&gui->screen_timeout_ev, &gui->queue, &gui->screen_timeout);
+
+    hal_set_button_cb(_gui_button_irq, gui);
+
+    event_timeout_set(&gui->screen_timeout_ev, CONFIG_GUI_SCREEN_TIMEOUT);
     /* Bootstrap lvgl loop events */
     xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
     while(1)

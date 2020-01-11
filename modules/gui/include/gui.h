@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include "lvgl.h"
 #include "event.h"
+#include "event/timeout.h"
 #include "ts_event.h"
 #include "widget.h"
 #include "thread.h"
@@ -23,6 +24,10 @@ extern "C" {
 
 #ifndef CONFIG_GUI_LVGL_LOOP_TIME
 #define CONFIG_GUI_LVGL_LOOP_TIME       (10 * US_PER_MS)
+#endif
+
+#ifndef CONFIG_GUI_SCREEN_TIMEOUT
+#define CONFIG_GUI_SCREEN_TIMEOUT       (5 * MS_PER_SEC * US_PER_MS)
 #endif
 
 typedef enum {
@@ -58,6 +63,9 @@ typedef struct {
     lv_indev_drv_t indev_drv;
     lv_disp_buf_t disp_buf;
     lv_disp_t *display;
+    event_t button_press;
+    event_t screen_timeout;
+    event_timeout_t screen_timeout_ev;
     event_queue_t queue;
     widget_t *active_widget;
     xtimer_t lvgl_loop; /* timer loop for lvgl */
