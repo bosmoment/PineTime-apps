@@ -28,6 +28,14 @@ Fresh binaries from the CI:
 - *Time keeping*: nRF52832 RTC for ticks per second time/date updates
 - *Graphical user interface*: via LittleVGL.
 
+And the default "home" screen includes:
+- *Time/date*: The current minutes and hour are shown as numbers, the day,
+               the month and year are shown and a second "hand" is shown as a
+               circular meter.
+- *Battery status*: Battery status is available on the main screen
+- *Bluetooth status*: Bluetooth connection and advertisement mode is shown on
+                      the screen
+
 More to follow
 
 ## Structure
