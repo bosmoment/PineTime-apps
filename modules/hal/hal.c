@@ -54,8 +54,8 @@ uint32_t hal_battery_read_voltage(void)
 
 int hal_battery_get_percentage(uint32_t voltage)
 {
-    /* 3900mV is full, 3200mV is empty */
-    int percentage = (voltage - 3200) / 7;
+    /* 4200mV is full, 3500mV is empty */
+    int percentage = (voltage - 3500) / 7;
     if (percentage > 100) {
         return 100;
     }
@@ -82,6 +82,7 @@ void hal_init(void)
     gpio_set(LCD_BACKLIGHT_MID);
     gpio_set(LCD_BACKLIGHT_HIGH);
     if (ili9341_init(&_disp_dev, &ili9341_params[0]) == 0) {
+        hal_display_off();
         if (HAL_DISPLAY_DISABLE_INVERT_COLORS) {
             ili9341_invert_off(&_disp_dev);
         }
