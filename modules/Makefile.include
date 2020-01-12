@@ -7,6 +7,9 @@ endif
 ifneq (,$(filter controller,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/controller
 endif
+ifneq (,$(filter fonts,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/fonts
+endif
 ifneq (,$(filter hal,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/hal
 endif
