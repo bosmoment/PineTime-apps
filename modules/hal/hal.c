@@ -39,14 +39,17 @@ void hal_display_on(void)
     display_on = true;
     /* Low brightness for now */
     gpio_clear(LCD_BACKLIGHT_LOW);
+    gpio_set(LCD_BACKLIGHT_MID);
+    gpio_set(LCD_BACKLIGHT_HIGH);
 }
 
 /* Should be called somewhere during auto_init */
 void hal_init(void)
 {
     gpio_set(VIBRATOR);
+    gpio_set(LCD_BACKLIGHT_MID);
+    gpio_set(LCD_BACKLIGHT_HIGH);
     if (ili9341_init(&_disp_dev, &ili9341_params[0]) == 0) {
-        ili9341_invert_on(&_disp_dev);
         //ili9341_set_brightness(&_disp_dev, 0xff);
         hal_display_on();
         LOG_INFO("[ILI9341]: OK!\n");
