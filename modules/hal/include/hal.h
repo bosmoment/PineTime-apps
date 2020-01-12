@@ -35,6 +35,27 @@ void hal_init(void);
 void hal_display_on(void);
 void hal_display_off(void);
 void hal_set_button_cb(gpio_cb_t cb, void *arg);
+uint32_t hal_battery_read_voltage(void);
+
+int hal_battery_get_percentage(uint32_t voltage);
+
+/**
+ * @brief check if the battery is currently being charged
+ *
+ * True when the power is connected and the battery is not fully charged
+ *
+ * @returns     true when the charger is active
+ * @returns     false when the power is not connected or the battery is full
+ */
+bool hal_battery_is_charging(void);
+
+/**
+ * @brief check if the power is connected
+ *
+ * @returns     true when the power is connected
+ * @returns     false when the board runs on battery power
+ */
+bool hal_battery_is_powered(void);
 
 #ifdef __cplusplus
 }

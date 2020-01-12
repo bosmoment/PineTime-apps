@@ -6,9 +6,11 @@
  * directory for more details.
  */
 
+#include "board.h"
 #include "hal.h"
 #include "log.h"
 #include "board.h"
+#include "periph/adc.h"
 
 #include "ili9341.h"
 #include "ili9341_params.h"
@@ -43,6 +45,35 @@ void hal_display_on(void)
     gpio_set(LCD_BACKLIGHT_HIGH);
 }
 
+uint32_t hal_battery_read_voltage(void)
+{
+    int sample = adc_sample(BATTERY_ADC, ADC_RES_12BIT);
+    return ((uint32_t)sample * 2000) / 1241;
+}
+
+int hal_battery_get_percentage(uint32_t voltage)
+{
+    /* 3900mV is full, 3200mV is empty */
+    int percentage = (voltage - 3200) / 7;
+    if (percentage > 100) {
+        return 100;
+    }
+    else if (percentage < 0) {
+        return 0;
+    }
+    return percentage;
+}
+
+bool hal_battery_is_powered(void)
+{
+    return gpio_read(POWER_PRESENCE) ? false : true;
+}
+
+bool hal_battery_is_charging(void)
+{
+    return gpio_read(CHARGING_ACTIVE) ? false : true;
+}
+
 /* Should be called somewhere during auto_init */
 void hal_init(void)
 {
@@ -64,7 +95,9 @@ void hal_init(void)
     else {
         LOG_ERROR("[XPT2046]: Device initialization failed\n");
     }
-
+    adc_init(BATTERY_ADC);
+    gpio_init(POWER_PRESENCE, GPIO_IN);
+    gpio_init(CHARGING_ACTIVE, GPIO_IN);
 }
 
 void hal_set_button_cb(gpio_cb_t cb, void *arg)

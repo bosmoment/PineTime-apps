@@ -20,6 +20,8 @@ endif
 ifneq (,$(filter hal,$(USEMODULE)))
   USEMODULE += ili9341
   USEMODULE += xpt2046
+  FEATURES_REQUIRED += periph_adc
+  FEATURES_REQUIRED += periph_gpio
 endif
 
 ifneq (,$(filter util,$(USEMODULE)))
