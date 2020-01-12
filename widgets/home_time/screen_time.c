@@ -12,12 +12,14 @@
 #include "log.h"
 #include "lvgl.h"
 #include "gui.h"
+#include "gui/theme.h"
 #include "controller.h"
 #include "kernel_defines.h"
 #include "bleman.h"
+#include "fonts/noto_sans_numeric_80.h"
 
 static const widget_spec_t home_time_spec;
-static lv_style_t style_lmeter;
+static lv_style_t style_time;
 
 static int _screen_time_update_screen(widget_t *widget);
 unsigned hours = 19;
@@ -64,31 +66,19 @@ static void _screen_time_pressed(lv_obj_t *obj, lv_event_t event)
     }
 }
 
-static void _swap_style(home_time_widget_t *ht)
-{
-    if (ht->time.minute % 2) {
-        style_lmeter.line.color = LV_COLOR_SILVER;
-        style_lmeter.body.main_color = LV_COLOR_OLIVE;
-        style_lmeter.body.grad_color = LV_COLOR_OLIVE;
-    }
-    else {
-        style_lmeter.line.color = LV_COLOR_OLIVE;
-        style_lmeter.body.main_color = LV_COLOR_SILVER;
-        style_lmeter.body.grad_color = LV_COLOR_SILVER;
-    }
-}
-
 lv_obj_t *screen_time_create(home_time_widget_t *ht)
 {
     lv_obj_t *scr = lv_obj_create(NULL, NULL);
 
+    /* time (00:00)*/
     lv_obj_t * label1 = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label1, LV_LABEL_LONG_BREAK);
     lv_label_set_text(label1, "00:00");
-    lv_obj_set_width(label1, 200);
+    lv_obj_set_width(label1, 240);
     lv_obj_set_height(label1, 200);
     lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);
-    lv_obj_align(label1, scr, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(label1, scr, LV_ALIGN_CENTER, 0, -50);
+    lv_label_set_style(label1, LV_LABEL_STYLE_MAIN, &style_time);
     ht->lv_time = label1;
 
     lv_obj_t * l_state = lv_label_create(scr, NULL);
@@ -100,6 +90,7 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_obj_align(l_state, scr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     ht->lv_ble = l_state;
 
+    /* Power indicator */
     lv_obj_t * l_power = lv_label_create(scr, NULL);
     lv_obj_set_width(l_power, 80);
     lv_obj_set_height(l_power, 20);
@@ -109,31 +100,14 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_obj_align(l_power, scr, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
     ht->lv_power = l_power;
 
+    /* Date */
     lv_obj_t * label_date = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label_date, LV_LABEL_LONG_BREAK);
     lv_obj_set_width(label_date, 200);
     lv_obj_set_height(label_date, 200);
     lv_label_set_align(label_date, LV_LABEL_ALIGN_CENTER);
-    lv_obj_align(label_date, scr, LV_ALIGN_CENTER, 0, 30);
+    lv_obj_align(label_date, scr, LV_ALIGN_CENTER, 0, 20);
     ht->lv_date = label_date;
-
-    lv_obj_t *second_meter = lv_lmeter_create(scr, NULL);
-    lv_lmeter_set_range(second_meter, 0, 60);
-    lv_lmeter_set_value(second_meter, 10);
-    lv_lmeter_set_scale(second_meter, 354, 60);
-    lv_lmeter_set_angle_offset(second_meter, 177);
-    lv_obj_set_size(second_meter, 230, 230);
-    lv_obj_align(second_meter, NULL, LV_ALIGN_CENTER, 0, 0);
-    lv_lmeter_set_style(second_meter, LV_LMETER_STYLE_MAIN, &style_lmeter);
-    ht->lv_second_meter = second_meter;
-
-    LOG_INFO("[home_screen]: Created line meter from %" PRIu16 " to %" PRIu16 ""
-             " with %" PRIu16 " lines\n",
-             lv_lmeter_get_min_value(second_meter),
-             lv_lmeter_get_max_value(second_meter),
-             lv_lmeter_get_line_count(second_meter));
-
-
 
     lv_obj_set_click(scr, true);
 
@@ -171,17 +145,12 @@ static void _home_time_set_power_label(home_time_widget_t *htwidget)
     lv_label_set_text_fmt(htwidget->lv_power,
                           "#%06" PRIx32 " %u%%%s#",
                           color, htwidget->percentage,
-                          htwidget->powered ? LV_SYMBOL_CHARGE : "");
+                          htwidget->powered ? LV_SYMBOL_CHARGE : " ");
     lv_obj_align(htwidget->lv_power, htwidget->screen, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 }
 
-static int _screen_time_update_screen(widget_t *widget)
+static int _home_time_set_time_label(home_time_widget_t *ht)
 {
-    home_time_widget_t *ht = _from_widget(widget);
-
-    /* Set the correct style */
-    _swap_style(ht);
-
     char time[6];
     char date[15];
     int res = snprintf(time, sizeof(time), "%02u:%02u\n", ht->time.hour,
@@ -200,7 +169,14 @@ static int _screen_time_update_screen(widget_t *widget)
         return -1;
     }
     lv_label_set_text(ht->lv_date, date);
-    lv_lmeter_set_value(ht->lv_second_meter, ht->time.second+1);
+    return 0;
+}
+
+static int _screen_time_update_screen(widget_t *widget)
+{
+    home_time_widget_t *ht = _from_widget(widget);
+
+    _home_time_set_time_label(ht);
     _home_time_set_bt_label(ht);
     _home_time_set_power_label(ht);
     return 0;
@@ -225,12 +201,8 @@ int home_time_init(widget_t *widget)
                                CONTROLLER_EVENT_FLAG(CONTROLLER_EVENT_BLUETOOTH);
     htwidget->handler.widget = widget;
 
-    /* Styles */
-    lv_style_copy(&style_lmeter, &lv_style_pretty_color);
-    style_lmeter.line.width = 3;
-    style_lmeter.line.color = LV_COLOR_SILVER;
-    style_lmeter.body.main_color = LV_COLOR_OLIVE;
-    style_lmeter.body.grad_color = LV_COLOR_OLIVE;
+    lv_style_copy(&style_time, gui_theme_get()->style.label.prim);
+    style_time.text.font = &noto_sans_numeric_80;
 
     controller_add_control_handler(controller_get(), &htwidget->handler);
     return 0;

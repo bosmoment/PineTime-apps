@@ -23,7 +23,6 @@ typedef struct _home_time_widget {
     lv_obj_t *screen;
     lv_obj_t *lv_time;
     lv_obj_t *lv_date;
-    lv_obj_t *lv_second_meter;
     lv_obj_t *lv_ble;
     lv_obj_t *lv_power;
     bleman_ble_state_t ble_state;
