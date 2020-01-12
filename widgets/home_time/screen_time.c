@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "home_time.h"
+#include "hal.h"
 #include "log.h"
 #include "lvgl.h"
 #include "gui.h"
@@ -22,6 +23,12 @@ static int _screen_time_update_screen(widget_t *widget);
 unsigned hours = 19;
 unsigned minutes = 43;
 unsigned seconds = 20;
+
+/* TODO: make configurable */
+static const unsigned battery_low = 20;               /* Battery low percentage */
+static const uint32_t battery_low_color = 0xDC143C;   /* Electric crimson */
+static const uint32_t battery_mid_color = 0xFF7F00;   /* Orange */
+static const uint32_t battery_full_color = 0x138808;  /* India green */
 /* Widget context */
 home_time_widget_t home_time_widget = {
     .widget = {.spec = &home_time_spec }
@@ -77,7 +84,7 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
 
     lv_obj_t * label1 = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label1, LV_LABEL_LONG_BREAK);
-    lv_label_set_text(label1, "21:36");
+    lv_label_set_text(label1, "00:00");
     lv_obj_set_width(label1, 200);
     lv_obj_set_height(label1, 200);
     lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);
@@ -92,6 +99,15 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_label_set_align(l_state, LV_LABEL_ALIGN_LEFT);
     lv_obj_align(l_state, scr, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     ht->lv_ble = l_state;
+
+    lv_obj_t * l_power = lv_label_create(scr, NULL);
+    lv_obj_set_width(l_power, 80);
+    lv_obj_set_height(l_power, 20);
+    lv_label_set_text(l_power, "");
+    lv_label_set_recolor(l_power, true);
+    lv_label_set_align(l_power, LV_LABEL_ALIGN_RIGHT);
+    lv_obj_align(l_power, scr, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+    ht->lv_power = l_power;
 
     lv_obj_t * label_date = lv_label_create(scr, NULL);
     lv_label_set_long_mode(label_date, LV_LABEL_LONG_BREAK);
@@ -142,6 +158,23 @@ static void _home_time_set_bt_label(home_time_widget_t *htwidget)
     }
 }
 
+static void _home_time_set_power_label(home_time_widget_t *htwidget)
+{
+    uint32_t color = battery_mid_color;
+    if (htwidget->percentage <= battery_low) {
+        color = battery_low_color;
+    }
+    if (htwidget->powered && !(htwidget->charging) ) {
+        /* Battery charge cycle finished */
+        color = battery_full_color;
+    }
+    lv_label_set_text_fmt(htwidget->lv_power,
+                          "#%06" PRIx32 " %u%%%s#",
+                          color, htwidget->percentage,
+                          htwidget->powered ? LV_SYMBOL_CHARGE : "");
+    lv_obj_align(htwidget->lv_power, htwidget->screen, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
+}
+
 static int _screen_time_update_screen(widget_t *widget)
 {
     home_time_widget_t *ht = _from_widget(widget);
@@ -169,6 +202,7 @@ static int _screen_time_update_screen(widget_t *widget)
     lv_label_set_text(ht->lv_date, date);
     lv_lmeter_set_value(ht->lv_second_meter, ht->time.second+1);
     _home_time_set_bt_label(ht);
+    _home_time_set_power_label(ht);
     return 0;
 }
 
@@ -231,12 +265,25 @@ int home_time_close(widget_t *widget)
     return 0;
 }
 
+static void _update_power_stats(home_time_widget_t *htwidget)
+{
+    htwidget->powered = hal_battery_is_powered();
+    htwidget->charging = hal_battery_is_charging();
+    if (htwidget->time.second == 0 || htwidget->percentage == 0) {
+        unsigned percentage = hal_battery_get_percentage(
+                hal_battery_read_voltage()
+                );
+        htwidget->percentage = percentage;
+    }
+}
+
 int home_time_event(widget_t *widget, controller_event_t event)
 {
     home_time_widget_t *htwidget = _from_widget(widget);
     widget_get_control_lock(widget);
     if (event == CONTROLLER_EVENT_TICK) {
         memcpy(&htwidget->time, controller_time_get_time(controller_get()), sizeof(controller_time_spec_t));
+        _update_power_stats(htwidget);
     }
 #ifdef MODULE_BLEMAN
     if (event == CONTROLLER_EVENT_BLUETOOTH) {
