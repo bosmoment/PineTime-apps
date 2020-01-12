@@ -172,8 +172,8 @@ static void _gui_lvgl_update(gui_t *gui)
 {
     if (gui->display_on) {
         xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
-        lv_task_handler();
         _gui_update_widget_draw(gui);
+        lv_task_handler();
     }
 }
 
