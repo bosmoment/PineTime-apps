@@ -77,13 +77,13 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_obj_set_width(label1, 240);
     lv_obj_set_height(label1, 200);
     lv_label_set_align(label1, LV_LABEL_ALIGN_CENTER);
-    lv_obj_align(label1, scr, LV_ALIGN_CENTER, 0, -50);
+    lv_obj_align(label1, scr, LV_ALIGN_CENTER, 0, -30);
     lv_label_set_style(label1, LV_LABEL_STYLE_MAIN, &style_time);
     ht->lv_time = label1;
 
     lv_obj_t * l_state = lv_label_create(scr, NULL);
-    lv_obj_set_width(l_state, 30);
-    lv_obj_set_height(l_state, 20);
+    lv_obj_set_width(l_state, 50);
+    lv_obj_set_height(l_state, 80);
     lv_label_set_text(l_state, "");
     lv_label_set_recolor(l_state, true);
     lv_label_set_align(l_state, LV_LABEL_ALIGN_LEFT);
@@ -106,7 +106,7 @@ lv_obj_t *screen_time_create(home_time_widget_t *ht)
     lv_obj_set_width(label_date, 200);
     lv_obj_set_height(label_date, 200);
     lv_label_set_align(label_date, LV_LABEL_ALIGN_CENTER);
-    lv_obj_align(label_date, scr, LV_ALIGN_CENTER, 0, 20);
+    lv_obj_align(label_date, scr, LV_ALIGN_CENTER, 0, 40);
     ht->lv_date = label_date;
 
     lv_obj_set_click(scr, true);
@@ -135,7 +135,8 @@ static void _home_time_set_bt_label(home_time_widget_t *htwidget)
 static void _home_time_set_power_label(home_time_widget_t *htwidget)
 {
     uint32_t color = battery_mid_color;
-    if (htwidget->percentage <= battery_low) {
+    unsigned percentage = hal_battery_get_percentage(htwidget->millivolts);
+    if (percentage <= battery_low) {
         color = battery_low_color;
     }
     if (htwidget->powered && !(htwidget->charging) ) {
@@ -143,9 +144,11 @@ static void _home_time_set_power_label(home_time_widget_t *htwidget)
         color = battery_full_color;
     }
     lv_label_set_text_fmt(htwidget->lv_power,
-                          "#%06" PRIx32 " %u%%%s#",
-                          color, htwidget->percentage,
-                          htwidget->powered ? LV_SYMBOL_CHARGE : " ");
+                          "#%06" PRIx32 " %u%%%s#\n(%"PRIu32"mV)",
+                          color, percentage,
+                          htwidget->powered ? LV_SYMBOL_CHARGE : " ",
+                          htwidget->millivolts
+                          );
     lv_obj_align(htwidget->lv_power, htwidget->screen, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
 }
 
@@ -153,9 +156,9 @@ static int _home_time_set_time_label(home_time_widget_t *ht)
 {
     char time[6];
     char date[15];
-    int res = snprintf(time, sizeof(time), "%02u:%02u\n", ht->time.hour,
+    int res = snprintf(time, sizeof(time), "%02u:%02u", ht->time.hour,
                        ht->time.minute);
-    if (res != sizeof(time)) {
+    if (res != sizeof(time) - 1) {
         LOG_ERROR("[home_time]: error formatting time string %*s\n", res, time);
         return -1;
     }
@@ -241,11 +244,8 @@ static void _update_power_stats(home_time_widget_t *htwidget)
 {
     htwidget->powered = hal_battery_is_powered();
     htwidget->charging = hal_battery_is_charging();
-    if (htwidget->time.second == 0 || htwidget->percentage == 0) {
-        unsigned percentage = hal_battery_get_percentage(
-                hal_battery_read_voltage()
-                );
-        htwidget->percentage = percentage;
+    if ((htwidget->time.second % 10) == 0 || htwidget->millivolts == 0) {
+        htwidget->millivolts = hal_battery_read_voltage();
     }
 }
 

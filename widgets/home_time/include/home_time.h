@@ -28,7 +28,7 @@ typedef struct _home_time_widget {
     bleman_ble_state_t ble_state;
     /* Shared storage between gui and control */
     controller_time_spec_t time;
-    unsigned percentage;
+    uint32_t millivolts;
     bool charging;
     bool powered;
 } home_time_widget_t;
