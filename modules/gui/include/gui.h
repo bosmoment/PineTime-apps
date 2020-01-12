@@ -30,6 +30,10 @@ extern "C" {
 #define CONFIG_GUI_SCREEN_TIMEOUT       (5 * MS_PER_SEC * US_PER_MS)
 #endif
 
+#define GUI_MSG_QUEUE_SIZE              8
+
+#define GUI_MSG_SWITCH_WIDGET           0x0001
+
 typedef enum {
     GUI_SCREEN_NONE,
     GUI_SCREEN_OFF,
@@ -63,6 +67,7 @@ typedef struct {
     lv_indev_drv_t indev_drv;
     lv_disp_buf_t disp_buf;
     lv_disp_t *display;
+    msg_t msg_queue[GUI_MSG_QUEUE_SIZE];
     event_t button_press;
     event_t screen_timeout;
     event_timeout_t screen_timeout_ev;
@@ -70,6 +75,7 @@ typedef struct {
     widget_t *active_widget;
     xtimer_t lvgl_loop; /* timer loop for lvgl */
     kernel_pid_t pid;
+    bool display_on;
 } gui_t;
 
 typedef struct {

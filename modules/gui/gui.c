@@ -23,6 +23,7 @@
 #include "ts_event.h"
 #include "widget.h"
 #include "event/timeout.h"
+#include "msg.h"
 
 #define LVGL_THREAD_NAME    "lvgl"
 #define LVGL_THREAD_PRIO    6
@@ -41,6 +42,7 @@ static gui_t _gui;
 
 static unsigned press_hist[2];
 static hal_input_coord_t _coord;
+static void _gui_lvgl_update(gui_t *gui);
 
 static lv_color_t _buf1[GUI_BUF_SIZE];
 static lv_color_t _buf2[GUI_BUF_SIZE];
@@ -48,11 +50,6 @@ static lv_color_t _buf2[GUI_BUF_SIZE];
 extern lv_obj_t *screen_time_create(void);
 extern lv_obj_t *screen_menu_create(void);
 
-static void _gui_event_switch_widget_draw(event_t *event);
-
-static gui_event_widget_switch_t ev_sw = {
-    .super = { .super = { .handler = _gui_event_switch_widget_draw} }
-};
 
 gui_t *gui_get_ctx(void)
 {
@@ -93,23 +90,22 @@ static void _switch_widget_draw(gui_t *gui, widget_t *widget)
     gui->active_widget = widget;
 }
 
-static void _gui_event_switch_widget_draw(event_t *event)
+static void _gui_update_widget_draw(gui_t *gui)
 {
-    gui_event_widget_switch_t *sw = (gui_event_widget_switch_t *)event;
-    _switch_widget_draw(gui_get_ctx(), sw->widget);
-    ts_event_clear(&sw->super);
+    if (widget_is_dirty(gui->active_widget)) {
+        LOG_DEBUG("[GUI]: widget is dirty, updating\n");
+        widget_update_draw(gui->active_widget);
+    }
 }
+
 
 int gui_event_submit_switch_widget(widget_t *widget)
 {
     gui_t *gui = gui_get_ctx();
-    if (ts_event_claim(&ev_sw.super) == -EBUSY) {
-        return -EBUSY;
-    }
-    LOG_INFO("[GUI]: Submitting widget switch event\n");
-    ev_sw.widget = widget;
-    event_post(&gui->queue, &ev_sw.super.super);
-    return 0;
+    msg_t msg;
+    msg.type = GUI_MSG_SWITCH_WIDGET;
+    msg.content.ptr = widget;
+    return msg_send(&msg, gui->pid);
 }
 
 int lvgl_thread_create(void)
@@ -137,22 +133,28 @@ static void _gui_lvgl_trigger(void *arg)
 {
     gui_t *gui = arg;
     thread_flags_set((thread_t*)sched_threads[gui->pid], GUI_THREAD_FLAG_LVGL_HANDLE);
-    xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
+}
+
+static void _gui_screen_on(gui_t *gui)
+{
+    if (gui->display_on == false) {
+        gui->display_on = true;
+        _gui_lvgl_update(gui);
+        hal_display_on();
+    }
 }
 
 static void _gui_button_irq(void *arg)
 {
     gui_t *gui = (gui_t*)arg;
     /* Button pressed */
-    puts("[gui] BUTTON!");
     event_post(&gui->queue, &gui->button_press);
 }
 
 static void _gui_button_event(event_t *event)
 {
     gui_t *gui = container_of(event, gui_t, button_press);
-    LOG_INFO("[gui] Screen on\n");
-    hal_display_on();
+    _gui_screen_on(gui);
     event_timeout_clear(&gui->screen_timeout_ev);
     event_timeout_set(&gui->screen_timeout_ev, CONFIG_GUI_SCREEN_TIMEOUT);
 }
@@ -162,12 +164,35 @@ static void _gui_screen_timeout(event_t *event)
     LOG_INFO("[gui] Screen off after timeout\n");
     gui_t *gui = container_of(event, gui_t, screen_timeout);
     (void)gui;
+    gui->display_on = false;
     hal_display_off();
+}
+
+static void _gui_lvgl_update(gui_t *gui)
+{
+    if (gui->display_on) {
+        xtimer_set(&gui->lvgl_loop, CONFIG_GUI_LVGL_LOOP_TIME);
+        lv_task_handler();
+        _gui_update_widget_draw(gui);
+    }
+}
+
+/* Message handling */
+static void _gui_handle_msg(gui_t *gui, msg_t *msg)
+{
+    switch(msg->type) {
+        case GUI_MSG_SWITCH_WIDGET:
+            _switch_widget_draw(gui, msg->content.ptr);
+            break;
+        default:
+            LOG_ERROR("[gui]: Unhandled msg of type %"PRIu16"\n", msg->type);
+    }
 }
 
 static void *_lvgl_thread(void* arg)
 {
     gui_t *gui = (gui_t*)arg;
+    msg_init_queue(gui->msg_queue, GUI_MSG_QUEUE_SIZE);
     gui->pid = thread_getpid();
 
     gui->lvgl_loop.callback = _gui_lvgl_trigger;
@@ -183,6 +208,7 @@ static void *_lvgl_thread(void* arg)
     gui->screen_timeout.handler = _gui_screen_timeout;
     event_timeout_init(&gui->screen_timeout_ev, &gui->queue, &gui->screen_timeout);
 
+    /* Configure the button */
     hal_set_button_cb(_gui_button_irq, gui);
 
     event_timeout_set(&gui->screen_timeout_ev, CONFIG_GUI_SCREEN_TIMEOUT);
@@ -195,8 +221,17 @@ static void *_lvgl_thread(void* arg)
             GUI_THREAD_FLAG_IDLE |
             GUI_THREAD_FLAG_WAKE |
             GUI_THREAD_FLAG_LVGL_HANDLE |
-            THREAD_FLAG_EVENT
+            THREAD_FLAG_EVENT |
+            THREAD_FLAG_MSG_WAITING
             );
+        /* External thread to GUI messages */
+        if (flag & THREAD_FLAG_MSG_WAITING) {
+            msg_t msg;
+            while (msg_try_receive(&msg) == 1) {
+                _gui_handle_msg(gui, &msg);
+            }
+        }
+        /* Internal state machine based events */
         if (flag & THREAD_FLAG_EVENT) {
             event_t *ev = event_get(&gui->queue);
             if (ev) {
@@ -207,12 +242,7 @@ static void *_lvgl_thread(void* arg)
             }
         }
         if (flag & GUI_THREAD_FLAG_LVGL_HANDLE) {
-            lv_task_handler();
-            if (widget_is_dirty(gui->active_widget)) {
-                LOG_DEBUG("[GUI]: widget is dirty, updating\n");
-                widget_update_draw(gui->active_widget);
-            }
-
+            _gui_lvgl_update(gui);
         }
         if (flag & GUI_THREAD_FLAG_IDLE) {
             /* idle handling */
