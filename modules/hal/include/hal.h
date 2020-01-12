@@ -19,6 +19,18 @@
 extern "C" {
 #endif
 
+/**
+ * The Pinetime display requires color inversion on. This define disables it
+ * after init for test setups with different displays
+ */
+#ifndef HAL_DISPLAY_DISABLE_INVERT_COLORS
+#define HAL_DISPLAY_DISABLE_INVERT_COLORS   0
+#endif
+
+#ifndef HAL_DISPLAY_COLORS_BGR
+#define HAL_DISPLAY_COLORS_BGR              0
+#endif
+
 typedef void display_t;
 
 static inline void hal_display_flush(display_t *display, uint16_t x1,

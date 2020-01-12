@@ -14,6 +14,7 @@
 
 #include "ili9341.h"
 #include "ili9341_params.h"
+#include "ili9341_internal.h"
 
 #include "lvgl.h"
 
@@ -81,6 +82,15 @@ void hal_init(void)
     gpio_set(LCD_BACKLIGHT_MID);
     gpio_set(LCD_BACKLIGHT_HIGH);
     if (ili9341_init(&_disp_dev, &ili9341_params[0]) == 0) {
+        if (HAL_DISPLAY_DISABLE_INVERT_COLORS) {
+            ili9341_invert_off(&_disp_dev);
+        }
+        if (HAL_DISPLAY_COLORS_BGR) {
+            static const uint8_t command_params = ILI9341_MADCTL_HORZ_FLIP |
+                                                  ILI9341_MADCTL_BGR;
+            ili9341_write_cmd(&_disp_dev, ILI9341_CMD_MADCTL, &command_params,
+                       sizeof(command_params));
+        }
         //ili9341_set_brightness(&_disp_dev, 0xff);
         hal_display_on();
         LOG_INFO("[ILI9341]: OK!\n");
