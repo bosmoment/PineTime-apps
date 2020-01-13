@@ -54,7 +54,12 @@ The project is separated into a number of directories:
 ### Repository setup
 
 When checking out this repository, don't forget to initialize the RIOT submodule
-contained within this repository with: `git submodule update`.
+contained within this repository with:
+
+```Shellsession
+git submodule init
+git submodule update
+```
 
 ### Building applications
 
