@@ -31,7 +31,7 @@ void *hal_input_get_context(void)
 
 int hal_input_init(void)
 {
-    return xpt2046_init(&_input_dev, &_input_params);
+    return xpt2046_init(&_input_dev, &_xpt2046_input_params);
 }
 
 int hal_input_get_measurement(input_t *input, hal_input_coord_t *coord)

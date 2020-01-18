@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include "xpt2046.h"
+#include "cst816s.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,10 +34,19 @@ extern "C" {
 #endif
 
 /* TODO: move to params include */
-static const xpt2046_params_t _input_params = {
+static const xpt2046_params_t _xpt2046_input_params = {
     .spi = SPI_DEV(0),
     .spi_clk = SPI_CLK_1MHZ,
     .cs_pin  = GPIO_PIN(0, 28),
+};
+
+/* TODO: move to params include */
+static const cst816s_params_t _cst816s_input_params = {
+    .i2c_dev = I2C_DEV(0),
+    .i2c_addr = 0x15,
+    .irq = GPIO_PIN(0, 28),
+    .irq_flank = GPIO_FALLING,
+    .reset =  GPIO_PIN(0, 10),
 };
 
 typedef void input_t;

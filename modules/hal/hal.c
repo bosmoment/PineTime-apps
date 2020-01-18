@@ -101,10 +101,10 @@ void hal_init(void)
         LOG_ERROR("[ILI9341]: Device initialization failed\n");
     }
     if (hal_input_init() == 0) {
-        LOG_INFO("[XPT2046]: OK!\n");
+        LOG_INFO("[cst816s]: OK!\n");
     }
     else {
-        LOG_ERROR("[XPT2046]: Device initialization failed\n");
+        LOG_ERROR("[cst816s]: Device initialization failed\n");
     }
     adc_init(BATTERY_ADC);
     gpio_init(POWER_PRESENCE, GPIO_IN);

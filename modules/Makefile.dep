@@ -3,7 +3,6 @@ ifneq (,$(filter gui,$(USEMODULE)))
   USEPKG += lvgl
   USEMODULE += xtimer
   USEMODULE += event
-
   USEMODULE += lvgl_core
   USEMODULE += lvgl_objx
   USEMODULE += lvgl_misc
@@ -19,7 +18,8 @@ endif
 
 ifneq (,$(filter hal,$(USEMODULE)))
   USEMODULE += ili9341
-  USEMODULE += xpt2046
+  USEMODULE += cst816s
+  USEMODULE += hal_input
   FEATURES_REQUIRED += periph_adc
   FEATURES_REQUIRED += periph_gpio
 endif
