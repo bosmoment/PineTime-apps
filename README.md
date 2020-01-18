@@ -27,6 +27,7 @@ Fresh binaries from the CI:
 - *Time synchronisation*: Bluetooth GATT Current Time Service client
 - *Time keeping*: nRF52832 RTC for ticks per second time/date updates
 - *Graphical user interface*: via LittleVGL.
+- *Touch screen driver*: a basic cst816s touch screen driver is included in the RIOT fork
 
 And the default "home" screen includes:
 - *Time/date*: The current minutes and hour are shown as numbers, the day,
