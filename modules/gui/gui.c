@@ -156,16 +156,26 @@ static void _gui_button_event(event_t *event)
     gui_t *gui = container_of(event, gui_t, button_press);
     _gui_screen_on(gui);
     event_timeout_clear(&gui->screen_timeout_ev);
-    event_timeout_set(&gui->screen_timeout_ev, CONFIG_GUI_SCREEN_TIMEOUT);
+    event_timeout_set(&gui->screen_timeout_ev,
+            CONFIG_GUI_SCREEN_TIMEOUT * US_PER_MS);
 }
 
 static void _gui_screen_timeout(event_t *event)
 {
     LOG_INFO("[gui] Screen off after timeout\n");
     gui_t *gui = container_of(event, gui_t, screen_timeout);
-    (void)gui;
-    gui->display_on = false;
-    hal_display_off();
+    uint32_t inactive_time = lv_disp_get_inactive_time(NULL);
+    if (inactive_time  > CONFIG_GUI_SCREEN_TIMEOUT) {
+        /* Turn screen off */
+        gui->display_on = false;
+        hal_display_off();
+    }
+    else {
+        /* Touch event within the screen timeout, resubmit event with new timeout */
+        uint32_t timeout = CONFIG_GUI_SCREEN_TIMEOUT - inactive_time;
+        event_timeout_set(&gui->screen_timeout_ev,
+                          timeout * US_PER_MS);
+    }
 }
 
 static void _gui_lvgl_update(gui_t *gui)

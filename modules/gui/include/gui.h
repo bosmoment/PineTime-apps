@@ -26,8 +26,14 @@ extern "C" {
 #define CONFIG_GUI_LVGL_LOOP_TIME       (10 * US_PER_MS)
 #endif
 
+/**
+ * @brief Screen timeout configuration setting
+ *
+ * The display will automatically turn off after this many milliseconds
+ * of inactivity
+ */
 #ifndef CONFIG_GUI_SCREEN_TIMEOUT
-#define CONFIG_GUI_SCREEN_TIMEOUT       (5 * MS_PER_SEC * US_PER_MS)
+#define CONFIG_GUI_SCREEN_TIMEOUT       (5 * MS_PER_SEC)
 #endif
 
 #define GUI_MSG_QUEUE_SIZE              8
