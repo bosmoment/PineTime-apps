@@ -7,9 +7,15 @@ build_task:
   install_script:
     - git submodule init
     - git submodule update
-  build_script: 
+  pinetime_script: 
     - make -C apps/pinetime -j2 all
     - cp apps/pinetime/bin/pinetime/PineTime.* .
+  terminal_script: 
+    - make -C apps/terminal_display -j2 all
+    - cp apps/terminal_display/bin/pinetime/terminal.* .
   binaries_artifacts:
     path: "PineTime.*"
+    type: application/octet-stream
+  terminal_display_artifacts:
+    path: "terminal.*"
     type: application/octet-stream
