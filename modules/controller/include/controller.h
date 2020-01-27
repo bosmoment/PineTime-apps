@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include "event.h"
+#include "hal.h"
 #include "gui.h"
 #include "widget.h"
 #include "controller/structs.h"
@@ -46,6 +47,7 @@ typedef struct {
     widget_t *active_widget;
     control_event_handler_t *handlers;
     kernel_pid_t pid;
+    hal_reset_reason_t reset_reason;    /**< Current reset reason */
 } controller_t;
 
 #define CONTROLLER_EVENT_FLAG(flag)     (1 << flag)

@@ -126,6 +126,10 @@ static void *_control_thread(void* arg)
                              _bleman_control_event_cb, controller);
 #endif
 
+    controller->reset_reason = hal_get_reset_reason();
+
+    LOG_INFO("[controller]: MCU reset reason %02x\n", controller->reset_reason);
+
     widget_init_installed();
 
     gui_event_submit_switch_widget(widget_get_home());
