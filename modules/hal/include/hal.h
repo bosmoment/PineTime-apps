@@ -31,6 +31,18 @@ extern "C" {
 #define HAL_DISPLAY_COLORS_BGR              0
 #endif
 
+typedef enum {
+    HAL_RESET_REASON_RESETPIN       = 0,
+    HAL_RESET_REASON_WATCHDOG       = 1,
+    HAL_RESET_REASON_SOFT_RESET     = 2,
+    HAL_RESET_REASON_CPU_LOCKUP     = 3,
+    HAL_RESET_REASON_GPIO_DETECT    = 16,
+    HAL_RESET_REASON_LPCOMP         = 17,
+    HAL_RESET_REASON_DEBUG_DETECT   = 18,
+    HAL_RESET_REASON_NFC            = 19,
+    HAL_RESET_REASON_ON_CHIP        = 255,
+} hal_reset_reason_t;
+
 typedef void display_t;
 
 static inline void hal_display_flush(display_t *display, uint16_t x1,
@@ -49,7 +61,15 @@ void hal_display_off(void);
 void hal_set_button_cb(gpio_cb_t cb, void *arg);
 uint32_t hal_battery_read_voltage(void);
 
+/**
+ * @brief retrieves the reset reason from the registers
+ *
+ * @note register is cleared after reading to prevent accumulating reset
+ * reasons.
+ */
 int hal_battery_get_percentage(uint32_t voltage);
+
+hal_reset_reason_t hal_get_reset_reason(void);
 
 /**
  * @brief check if the battery is currently being charged

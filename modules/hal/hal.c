@@ -22,6 +22,8 @@
 static ili9341_t _disp_dev;
 static bool display_on;
 
+
+
 void *hal_display_get_context(void)
 {
     return (display_t*)&_disp_dev;
@@ -73,6 +75,18 @@ bool hal_battery_is_powered(void)
 bool hal_battery_is_charging(void)
 {
     return gpio_read(CHARGING_ACTIVE) ? false : true;
+}
+
+hal_reset_reason_t hal_get_reset_reason(void)
+{
+    uint32_t reset_reason = NRF_POWER->RESETREAS;
+    NRF_POWER->RESETREAS = 0x000f000f; /* Writing 1 to the reason clears */
+    if (reset_reason == 0) {
+        return HAL_RESET_REASON_ON_CHIP;
+    }
+    else {
+        return bitarithm_lsb(reset_reason);
+    }
 }
 
 /* Should be called somewhere during auto_init */
