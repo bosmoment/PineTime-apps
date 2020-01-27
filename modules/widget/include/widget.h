@@ -26,7 +26,7 @@ typedef widget_t* widget_map_t;
 /**
  * @brief widget specification map
  *
- * @note should be declared const to have it reside in the MCU flash
+ * @note should be declared const to ensure it resides in the MCU flash
  */
 typedef struct widget_spec {
    /**
