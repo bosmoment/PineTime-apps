@@ -165,7 +165,7 @@ static void _gui_screen_timeout(event_t *event)
     LOG_INFO("[gui] Screen off after timeout\n");
     gui_t *gui = container_of(event, gui_t, screen_timeout);
     uint32_t inactive_time = lv_disp_get_inactive_time(NULL);
-    if (inactive_time  > CONFIG_GUI_SCREEN_TIMEOUT) {
+    if (inactive_time  >= CONFIG_GUI_SCREEN_TIMEOUT) {
         /* Turn screen off */
         gui->display_on = false;
         hal_display_off();
