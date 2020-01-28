@@ -10,6 +10,7 @@
 #include "xtimer.h"
 #include "lvgl.h"
 #include "controller.h"
+#include "hal.h"
 #include "bleman.h"
 
 #include "shell.h"
@@ -18,7 +19,6 @@
 #define MAIN_QUEUE_SIZE     (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-extern lv_disp_t *hal_init(void);
 int lvgl_thread_create(void);
 
 int main(void)
