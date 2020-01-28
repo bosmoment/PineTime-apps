@@ -11,6 +11,7 @@
 #include "lvgl.h"
 #include "controller.h"
 #include "bleman.h"
+#include "hal.h"
 
 #include "shell.h"
 #include "msg.h"
@@ -18,7 +19,6 @@
 #define MAIN_QUEUE_SIZE     (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
-extern lv_disp_t *hal_init(void);
 int lvgl_thread_create(void);
 
 int main(void)
