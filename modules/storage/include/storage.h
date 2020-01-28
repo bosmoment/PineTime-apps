@@ -22,7 +22,7 @@ extern "C" {
 #define STORAGE_FS_USER_MOUNT_POINT     "/user"
 
 #ifndef STORAGE_FS_FORCE_FORMAT
-#define STORAGE_FS_FORCE_FORMAT         (1)
+#define STORAGE_FS_FORCE_FORMAT         (0)
 #endif
 
 /**
