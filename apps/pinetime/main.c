@@ -12,6 +12,7 @@
 #include "controller.h"
 #include "hal.h"
 #include "bleman.h"
+#include "storage.h"
 
 #include "shell.h"
 #include "msg.h"
@@ -23,6 +24,7 @@ int lvgl_thread_create(void);
 
 int main(void)
 {
+    storage_init();
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
     LOG_DEBUG("Starting PineTime application");
     lv_init();

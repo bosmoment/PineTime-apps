@@ -4,6 +4,7 @@ USEMODULE += widget
 USEMODULE += fonts
 USEMODULE += bleman
 USEMODULE += hal
+USEMODULE += storage
 USEMODULE += util
 
 USEMODULE += shell
