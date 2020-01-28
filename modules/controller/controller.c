@@ -97,7 +97,8 @@ static void _submit_events(controller_t *controller, controller_event_t event)
 
 static void _controller_wdt_setup(controller_t *controller)
 {
-    wdt_setup_reboot(0, CONTROLLER_WDT_TIMEOUT_SEC * MS_PER_SEC);
+    /* Timeout + half a second for good measure :) */
+    wdt_setup_reboot(0, CONTROLLER_WDT_TIMEOUT_SEC * MS_PER_SEC + 500);
     wdt_start();
 }
 
