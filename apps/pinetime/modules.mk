@@ -1,6 +1,7 @@
 USEMODULE += gui
 USEMODULE += controller
 USEMODULE += widget
+USEMODULE += fonts
 USEMODULE += bleman
 USEMODULE += hal
 USEMODULE += util
