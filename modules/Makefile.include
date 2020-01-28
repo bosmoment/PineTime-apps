@@ -13,6 +13,9 @@ endif
 ifneq (,$(filter hal,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/hal
 endif
+ifneq (,$(filter storage,$(USEMODULE)))
+  EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/storage
+endif
 ifneq (,$(filter util,$(USEMODULE)))
   EXTERNAL_MODULE_DIRS += $(PINETIMEBASE)/modules/util
 endif

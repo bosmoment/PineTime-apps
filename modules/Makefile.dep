@@ -29,6 +29,14 @@ ifneq (,$(filter util,$(USEMODULE)))
   USEMODULE += core_thread_flags
 endif
 
+ifneq (,$(filter storage,$(USEMODULE)))
+  USEMODULE += mtd
+  USEMODULE += mtd_mapper
+  USEMODULE += vfs
+  USEPKG += littlefs
+  USEMODULE += littlefs_fs
+endif
+
 ifneq (,$(filter widget,$(USEMODULE)))
 endif
 
