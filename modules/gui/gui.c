@@ -155,6 +155,7 @@ static void _gui_button_event(event_t *event)
 {
     gui_t *gui = container_of(event, gui_t, button_press);
     _gui_screen_on(gui);
+    LOG_INFO("[gui] Button press event\n");
     event_timeout_clear(&gui->screen_timeout_ev);
     event_timeout_set(&gui->screen_timeout_ev,
             CONFIG_GUI_SCREEN_TIMEOUT * US_PER_MS);
@@ -243,12 +244,10 @@ static void *_lvgl_thread(void* arg)
         }
         /* Internal state machine based events */
         if (flag & THREAD_FLAG_EVENT) {
-            event_t *ev = event_get(&gui->queue);
-            if (ev) {
+            event_t *ev = NULL;
+            /* Handle all events */
+            while ((ev = event_get(&gui->queue))) {
                 ev->handler(ev);
-            }
-            else {
-                LOG_ERROR("[GUI]: No event while flag set\n");
             }
         }
         if (flag & GUI_THREAD_FLAG_LVGL_HANDLE) {
