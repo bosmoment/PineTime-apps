@@ -170,9 +170,9 @@ static void *_control_thread(void* arg)
             _submit_events(controller, CONTROLLER_EVENT_BLUETOOTH);
         }
         if (flags & THREAD_FLAG_EVENT) {
-            event_t *event = event_get(&controller->queue);
-            if (event) {
-                event->handler(event);
+            event_t *ev = NULL;
+            while ((ev = event_get(&controller->queue))) {
+                ev->handler(ev);
             }
         }
     }
