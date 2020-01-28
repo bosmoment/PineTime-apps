@@ -16,6 +16,8 @@
 #include "gui.h"
 #include "ts_event.h"
 
+#include "periph/wdt.h"
+
 #ifdef MODULE_BLEMAN
 #include "bleman.h"
 #include "host/ble_gap.h"
@@ -93,6 +95,24 @@ static void _submit_events(controller_t *controller, controller_event_t event)
     }
 }
 
+static void _controller_wdt_setup(controller_t *controller)
+{
+    wdt_setup_reboot(0, CONTROLLER_WDT_TIMEOUT_SEC * MS_PER_SEC);
+    wdt_start();
+}
+
+static void _controller_wdt_kick(controller_t *controller)
+{
+    if (CONTROLLER_WDT_RESET_ON_BUTTON_PRESS) {
+        if (!(gpio_read(BUTTON0_ENABLE))) {
+            LOG_WARNING("[controller]: Skipping WDT kick\n");
+            return;
+        }
+    }
+
+    wdt_kick();
+}
+
 #ifdef MODULE_BLEMAN
 static void _bleman_control_event_cb(bleman_t *bleman, struct ble_gap_event *event,
                                      void *arg)
@@ -119,6 +139,7 @@ static void *_control_thread(void* arg)
 {
     controller_t *controller = arg;
     controller->pid = thread_getpid();
+    _controller_wdt_setup(controller);
     event_queue_init(&_control.queue);
 	controller_time_init();
 #ifdef MODULE_BLEMAN
@@ -140,6 +161,7 @@ static void *_control_thread(void* arg)
             );
         /* Tick event from the RTC */
         if (flags & CONTROLLER_THREAD_FLAG_TICK) {
+            _controller_wdt_kick(controller);
             controller_update_time(controller);
             _submit_events(controller, CONTROLLER_EVENT_TICK);
         }

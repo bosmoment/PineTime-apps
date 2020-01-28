@@ -24,6 +24,24 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Watchdog timeout in seconds
+ */
+#ifndef CONTROLLER_WDT_TIMEOUT_SEC
+#define CONTROLLER_WDT_TIMEOUT_SEC      5
+#endif
+
+/**
+ * @brief Whether to trigger a WDT reset when the button is pressed for the
+ * duration of the WDT timeout
+ *
+ * Implemented by not resetting the WDT when the button is pressed
+ */
+#ifndef CONTROLLER_WDT_RESET_ON_BUTTON_PRESS
+#define CONTROLLER_WDT_RESET_ON_BUTTON_PRESS     1
+#endif
+
+
 #define CONTROLLER_THREAD_FLAG_TICK (1 << 8)
 #define CONTROLLER_THREAD_FLAG_BLUETOOTH (1 << 9)
 
