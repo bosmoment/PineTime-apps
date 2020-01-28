@@ -123,6 +123,7 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
                 return 0;
             }
             else {
+                ble_gap_adv_stop();
                 bleman->conn_handle = event->connect.conn_handle;
                 bleman->state = BLEMAN_BLE_STATE_CONNECTED;
 
