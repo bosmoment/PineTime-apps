@@ -28,7 +28,7 @@ extern "C" {
  * @brief Watchdog timeout in seconds
  */
 #ifndef CONTROLLER_WDT_TIMEOUT_SEC
-#define CONTROLLER_WDT_TIMEOUT_SEC      5
+#define CONTROLLER_WDT_TIMEOUT_SEC      7
 #endif
 
 /**
