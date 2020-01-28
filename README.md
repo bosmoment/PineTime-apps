@@ -128,6 +128,11 @@ the time.
 - A fork of the Android [GadgetBridge] application is available with basic
   support for this RIOT PineTime application.
 
+- By default the watchdog timer is running with a 5 second timeout. Every second
+  the controller will kick the watchdog timer to reset the timeout, unless the
+  button is pressed. A long press of the button will effectively cause a
+  watchdog timer reset of the system.
+
 ## Planned features
 
 - Device side Bluetooth key code confirmation (Only the host verifies the
