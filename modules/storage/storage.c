@@ -14,6 +14,7 @@
 #include "board.h"
 #include "storage.h"
 
+extern void storage_dirs_create_user_hier(void);
 static mtd_mapper_parent_t parent = MTD_PARENT_INIT(NULL);
 
 mtd_mapper_region_t storage_nor_fw_a = {
@@ -108,5 +109,6 @@ int storage_init(void)
     parent.mtd = MTD_0;
     assert(_storage_prepare(&_storage_fs_mount_sys) == 0);
     assert(_storage_prepare(&_storage_fs_mount_user) == 0);
+    storage_dirs_create_user_hier();
     return 0;
 }
