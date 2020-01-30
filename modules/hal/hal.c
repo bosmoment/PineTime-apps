@@ -61,7 +61,7 @@ int hal_battery_get_percentage(uint32_t voltage)
     if (percentage > 100) {
         return 100;
     }
-    else if (percentage < 0) {
+    else if (voltage < 3500) {
         return 0;
     }
     return percentage;
