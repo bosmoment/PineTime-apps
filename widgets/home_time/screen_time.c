@@ -244,9 +244,7 @@ static void _update_power_stats(home_time_widget_t *htwidget)
 {
     htwidget->powered = hal_battery_is_powered();
     htwidget->charging = hal_battery_is_charging();
-    if ((htwidget->time.second % 10) == 0 || htwidget->millivolts == 0) {
-        htwidget->millivolts = hal_battery_read_voltage();
-    }
+    htwidget->millivolts = controller_get_battery_voltage(controller_get());
 }
 
 int home_time_event(widget_t *widget, controller_event_t event)
