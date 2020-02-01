@@ -7,10 +7,11 @@
  */
 
 #include <stdint.h>
-
 #include <errno.h>
+
 #include "controller.h"
 #include "controller/time.h"
+#include "controller/battery.h"
 #include "log.h"
 #include "xtimer.h"
 #include "gui.h"
@@ -58,6 +59,11 @@ static void _handle_input_event(event_t *event)
             break;
     }
     ts_event_clear(&ev->super);
+}
+
+inline uint16_t controller_get_battery_voltage(controller_t *controller)
+{
+    return controller_battery_get_voltage(&controller->batt);
 }
 
 int controller_action_submit_input_action(widget_t *widget, controller_action_widget_t action)
@@ -143,6 +149,7 @@ static void *_control_thread(void* arg)
     _controller_wdt_setup(controller);
     event_queue_init(&_control.queue);
 	controller_time_init();
+	controller_battery_init(controller, &controller->batt);
 #ifdef MODULE_BLEMAN
     bleman_add_event_handler(bleman_get(), &controller->handler,
                              _bleman_control_event_cb, controller);

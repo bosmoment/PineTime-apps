@@ -9,6 +9,9 @@
 #ifndef APP_CONTROLLER_STRUCTS_H
 #define APP_CONTROLLER_STRUCTS_H
 
+#include "event.h"
+#include "event/timeout.h"
+#include "controller/time.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,6 +35,14 @@ typedef enum {
     CONTROLLER_EVENT_TICK, /**< Time tick event (1 sec) */
     CONTROLLER_EVENT_BLUETOOTH, /**< Bluetooth state changed */
 } controller_event_t;
+
+typedef struct {
+   event_t ev;
+   event_timeout_t evt;
+   uint16_t last_millivolts;
+   uint16_t average_millivolts;
+} controller_battery_t;
+
 /** @} */
 
 #ifdef __cplusplus

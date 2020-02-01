@@ -56,6 +56,7 @@ struct control_event_handler {
 typedef struct {
     event_queue_t queue;
     controller_time_spec_t cur_time;    /* Current time */
+    controller_battery_t batt;          /* Battery context struct */
     uint32_t last_update;               /* Last RTC counter value */
     bool time_in_sync;                  /* If the time is synced at least once a day */
     gui_screen_t cur_screen;
@@ -71,6 +72,8 @@ typedef struct {
 #define CONTROLLER_EVENT_FLAG(flag)     (1 << flag)
 
 controller_t *controller_get(void);
+
+uint16_t controller_get_battery_voltage(controller_t *controller);
 
 int controller_action_submit_input_action(widget_t *widget,
                                         controller_action_widget_t action);
