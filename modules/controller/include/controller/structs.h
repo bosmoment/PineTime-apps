@@ -12,6 +12,7 @@
 #include "event.h"
 #include "event/timeout.h"
 #include "controller/time.h"
+#include "mutex.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,6 +40,7 @@ typedef enum {
 typedef struct {
    event_t ev;
    event_timeout_t evt;
+   mutex_t lock;
    uint16_t last_millivolts;
    uint16_t average_millivolts;
 } controller_battery_t;

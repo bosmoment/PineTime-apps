@@ -14,14 +14,23 @@
 #include "controller.h"
 #include "controller/battery.h"
 
-static void _battery_ewma(controller_battery_t *cbatt, uint16_t measurement)
+uint16_t controller_battery_get_voltage(controller_battery_t *cbatt)
+{
+    mutex_lock(&cbatt->lock);
+    uint16_t voltage = cbatt->average_millivolts;
+    mutex_unlock(&cbatt->lock);
+    return voltage;
+}
+
+
+static uint16_t _battery_ewma(controller_battery_t *cbatt, uint16_t measurement)
 {
     /* Exponentially weighted moving average */
     if (cbatt->average_millivolts == 0) {
-        cbatt->average_millivolts = measurement;
+        return measurement;
     }
     else {
-        cbatt->average_millivolts = (CONTROLLER_BATTERY_ALPHA * measurement +
+        return (CONTROLLER_BATTERY_ALPHA * measurement +
             (10 - CONTROLLER_BATTERY_ALPHA) * cbatt->average_millivolts) / 10;
     }
 }
@@ -30,9 +39,13 @@ static void _battery_measure_event(event_t *event)
 {
     controller_battery_t *cbatt = container_of(event, controller_battery_t, ev);
     uint16_t measurement = hal_battery_read_voltage();
+    uint16_t new_average = _battery_ewma(cbatt, measurement);
 
+    mutex_lock(&cbatt->lock);
     cbatt->last_millivolts = measurement;
-    _battery_ewma(cbatt, measurement);
+    cbatt->average_millivolts = new_average;
+    mutex_unlock(&cbatt->lock);
+
     event_timeout_set(&cbatt->evt, CONTROLLER_BATTERY_INTERVAL * US_PER_MS);
 }
 

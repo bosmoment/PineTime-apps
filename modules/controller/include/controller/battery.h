@@ -36,10 +36,7 @@ extern "C" {
 #define CONTROLLER_BATTERY_ALPHA        1
 #endif
 
-static inline uint16_t controller_battery_get_voltage(controller_battery_t *cbatt)
-{
-    return cbatt->average_millivolts;
-}
+uint16_t controller_battery_get_voltage(controller_battery_t *cbatt);
 
 void controller_battery_init(controller_t *controller, controller_battery_t *cbatt);
 
