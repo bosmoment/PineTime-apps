@@ -7,6 +7,7 @@
  */
 
 #include "bleman.h"
+#include "bleman/bas.h"
 #include "log/log.h"
 #include "log.h"
 #include "assert.h"
@@ -52,6 +53,8 @@ static int _devinfo_handler(uint16_t conn_handle, uint16_t attr_handle,
 static uint16_t _hrs_val_handle;
 
 #include "bleman_conf.h"
+
+extern int bleman_bas_init(bleman_t *bleman, bleman_bas_t *bas);
 
 int bleman_thread_create(void)
 {
@@ -144,6 +147,14 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
                 }
                 else {
                     //_stop_updating();
+                }
+            }
+            else if (event->subscribe.attr_handle == bleman->bas.handle) {
+                if (event->subscribe.cur_notify == 1) {
+                   bleman_bas_notify(&bleman->bas, true);
+                }
+                else {
+                   bleman_bas_notify(&bleman->bas, false);
                 }
             }
             break;
@@ -249,6 +260,8 @@ static void *_bleman_thread(void *arg)
 
     //_chrs_evt.handler = _chrs_handler;
     //_read_evt.handler = _read_handler;
+
+    bleman_bas_init(bleman, &bleman->bas);
 
     /* verify and add our custom services */
     res = ble_gatts_count_cfg(gatt_svr_svcs);

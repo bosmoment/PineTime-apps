@@ -16,6 +16,7 @@
 #include "widget.h"
 #include "thread.h"
 #include "xtimer.h"
+#include "bleman/bas.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,6 +82,7 @@ struct _bleman {
     uint16_t conn_handle;
     bleman_event_handler_t *handlers;
     bleman_ble_state_t state;
+    bleman_bas_t bas;
 };
 
 int bleman_thread_create(void);
