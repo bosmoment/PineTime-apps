@@ -47,5 +47,3 @@ void bleman_bas_notify(bleman_bas_t *bas, bool enable);
 #endif
 
 #endif /* APP_CONTROLLER_BATTERY_H */
-
-
