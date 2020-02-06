@@ -80,6 +80,8 @@ typedef struct {
     event_queue_t queue;
     widget_t *active_widget;
     xtimer_t lvgl_loop; /* timer loop for lvgl */
+    xtimer_t button_debounce;
+    bool button_enabled;
     kernel_pid_t pid;
     bool display_on;
 } gui_t;

@@ -144,11 +144,21 @@ static void _gui_screen_on(gui_t *gui)
     }
 }
 
+static void _gui_enable_button(void *arg)
+{
+    gui_t *gui = arg;
+    gui->button_enabled = true;
+}
+
 static void _gui_button_irq(void *arg)
 {
     gui_t *gui = (gui_t*)arg;
     /* Button pressed */
-    event_post(&gui->queue, &gui->button_press);
+    if (gui->button_enabled) {
+        gui->button_enabled = false;
+        xtimer_set(&gui->button_debounce, 100 * US_PER_MS);
+        event_post(&gui->queue, &gui->button_press);
+    }
 }
 
 static void _gui_button_event(event_t *event)
@@ -208,6 +218,10 @@ static void *_lvgl_thread(void* arg)
 
     gui->lvgl_loop.callback = _gui_lvgl_trigger;
     gui->lvgl_loop.arg = gui;
+
+    gui->button_debounce.callback = _gui_enable_button;
+    gui->button_debounce.arg = gui;
+    gui->button_enabled = true;
 
     lv_theme_t *th = gui_theme_init(10, NULL);
     lv_theme_set_current(th);
