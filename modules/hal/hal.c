@@ -10,6 +10,7 @@
 #include "hal.h"
 #include "log.h"
 #include "board.h"
+#include "bitarithm.h"
 #include "periph/adc.h"
 
 #include "ili9341.h"
