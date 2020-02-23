@@ -70,6 +70,7 @@ uint32_t hal_battery_read_voltage(void);
 int hal_battery_get_percentage(uint32_t voltage);
 
 hal_reset_reason_t hal_get_reset_reason(void);
+uint32_t hal_get_internal_temp(void);
 
 /**
  * @brief check if the battery is currently being charged

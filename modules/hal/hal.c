@@ -88,6 +88,16 @@ hal_reset_reason_t hal_get_reset_reason(void)
     }
 }
 
+uint32_t hal_get_internal_temp(void)
+{
+    NRF_TEMP->TASKS_START = 1;
+    while (!NRF_TEMP->EVENTS_DATARDY) {
+    }
+    NRF_TEMP->EVENTS_DATARDY = 0;
+    NRF_TEMP->TASKS_STOP = 1;
+    return NRF_TEMP->TEMP;
+}
+
 /* Should be called somewhere during auto_init */
 void hal_init(void)
 {
