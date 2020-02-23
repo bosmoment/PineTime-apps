@@ -2,6 +2,9 @@
 
 RIOTBASE ?= $(PINETIMEBASE)/RIOT
 
+PINETIME_VERSION = $(call memoized,PINETIME_VERSION,$(shell git --git-dir="$(PINETIMEBASE)/.git" describe --always 2> /dev/null))
+CFLAGS += -DPINETIME_VERSION=\"$(PINETIME_VERSION)\"
+
 WIDGETDIR ?= $(PINETIMEBASE)/widgets
 PINEMODULEDIR ?= $(PINETIMEBASE)/modules
 
