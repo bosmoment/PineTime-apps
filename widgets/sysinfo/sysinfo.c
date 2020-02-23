@@ -48,7 +48,8 @@ static const char *sysinfo_label = ""
     "#" LABEL_LABEL_COLOR "Uptime:# \n %uh %02um %02us\n"
     "#" LABEL_LABEL_COLOR "Battery:# \n %umV\n"
     "#" LABEL_LABEL_COLOR "State:# \n %s\n"
-    "#" LABEL_LABEL_COLOR "Reboot Reason:# \n %s\n";
+    "#" LABEL_LABEL_COLOR "Reboot Reason:# \n %s\n"
+    "#" LABEL_LABEL_COLOR "Temperature:# \n %" PRIu32"\n";
 
 /* Widget context */
 sysinfo_widget_t sysinfo_widget = {
@@ -79,7 +80,8 @@ static void _sysinfo_set_label(sysinfo_widget_t *sysinfo)
                           hours, minutes, seconds,
                           sysinfo->battery_voltage,
                           power_state,
-                          sysinfo->reset_string);
+                          sysinfo->reset_string,
+                          sysinfo->temperature/4);
 }
 
 static lv_obj_t *_sysinfo_screen_create(sysinfo_widget_t *sysinfo)
@@ -90,6 +92,7 @@ static lv_obj_t *_sysinfo_screen_create(sysinfo_widget_t *sysinfo)
      * RIOT version
      * PineTime commit version
      * Battery voltage
+     * Temperature
      * Disk stats
      */
     lv_obj_t *scr = lv_obj_create(NULL, NULL);
@@ -175,6 +178,7 @@ static int sysinfo_event(widget_t *widget, controller_event_t event)
         sysinfo->uptime = xtimer_now_usec64() / US_PER_SEC;
         _update_power_stats(sysinfo);
         sysinfo->reset_string = sysinfo_reset_reason[controller_get()->reset_reason];
+        sysinfo->temperature = hal_get_internal_temp();
     }
     widget_release_control_lock(widget);
     return 0;

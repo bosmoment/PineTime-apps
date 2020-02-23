@@ -24,6 +24,7 @@ typedef struct _sysinfo_widget {
     lv_obj_t *info_label;
     lv_obj_t *page;
     uint64_t uptime;
+    uint32_t temperature;
     const char *reset_string;
     uint16_t battery_voltage;
     bool powered;
