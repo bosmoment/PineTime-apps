@@ -40,11 +40,9 @@ int hal_input_get_measurement(input_t *input, hal_input_coord_t *coord)
     cst816s_touch_data_t touch;
     int res = cst816s_read(dev, &touch, 1);
     if (res <= 0) {
-        LOG_INFO("No touch detected %d\n", res);
         /* No touch */
         return 0;
     }
-    LOG_INFO("Touch detected %d\n", res);
     uint16_t x = touch.x;
     uint16_t y = touch.y;
 
