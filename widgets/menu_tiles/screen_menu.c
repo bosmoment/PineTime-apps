@@ -30,6 +30,21 @@ static menu_tiles_widget_t *active_widget(void)
     return &menu_tiles_widget;
 }
 
+static void _screen_menu_button(lv_obj_t *obj, lv_event_t event)
+{
+    menu_tiles_widget_t *ht = active_widget();
+    switch (event) {
+        case LV_EVENT_CLICKED:
+            {
+                widget_t *target_widget = lv_obj_get_user_data(obj);
+                LOG_INFO("Menu button press event on %s\n", target_widget->spec->name);
+                controller_action_submit_input_action(&ht->widget, CONTROLLER_ACTION_WIDGET_SWITCH_TO, target_widget);
+            }
+        default:
+            break;
+    }
+}
+
 static void _screen_menu_exit(lv_obj_t *obj, lv_event_t event)
 {
     menu_tiles_widget_t *ht = active_widget();
@@ -53,10 +68,12 @@ lv_obj_t *screen_menu_create(void)
 
     lv_obj_t *list_btn;
     for (size_t i=2; i < ARRAY_SIZE(widgets_installed); i++) {
-        const widget_t *widget = widgets_installed[i];
+        widget_t *widget = widgets_installed[i];
         LOG_INFO("[menu_tiles]: adding button for %s\n", widget->spec->name);
         list_btn = lv_list_add_btn(list1, NULL, widget_get_label(widget));
         assert(list_btn);
+        lv_obj_set_user_data(list_btn, widget);
+        lv_obj_set_event_cb(list_btn, _screen_menu_button);
     }
     list_btn = lv_list_add_btn(list1, NULL, LV_SYMBOL_NEW_LINE " Close");
     assert(list_btn);
