@@ -23,8 +23,6 @@
 static ili9341_t _disp_dev;
 static bool display_on;
 
-
-
 void *hal_display_get_context(void)
 {
     return (display_t*)&_disp_dev;
@@ -108,18 +106,11 @@ void hal_init(void)
                        sizeof(command_params));
         }
         //ili9341_set_brightness(&_disp_dev, 0xff);
-        hal_display_on();
         LOG_INFO("[ILI9341]: OK!\n");
-        display_on = true;
+        display_on = false;
     }
     else {
         LOG_ERROR("[ILI9341]: Device initialization failed\n");
-    }
-    if (hal_input_init() == 0) {
-        LOG_INFO("[cst816s]: OK!\n");
-    }
-    else {
-        LOG_ERROR("[cst816s]: Device initialization failed\n");
     }
     adc_init(BATTERY_ADC);
     gpio_init(POWER_PRESENCE, GPIO_IN);

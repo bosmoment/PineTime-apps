@@ -106,6 +106,17 @@ typedef struct widget_spec {
     int (*event)(widget_t *widget, controller_event_t event);
 
 /**
+ * @brief Event signals from the gui to the application, events such as gestures
+ * for the application are transmitted through this callback
+ *
+ * @note Events are only submitted to the widget when the widget is active.
+ *
+ * @param   widget  The widget context
+ * @param   event   The event
+ */
+    int (*gui_event)(widget_t *widget, int event);
+
+/**
  * @brief Flags as defined above
  */
     uint16_t flags;

@@ -54,6 +54,7 @@ typedef void input_t;
 typedef struct {
     uint16_t x;
     uint16_t y;
+    int gesture;
 } hal_input_coord_t;
 
 void *hal_input_get_context(void);
@@ -67,7 +68,7 @@ void *hal_input_get_context(void);
  */
 int hal_input_get_measurement(input_t *input, hal_input_coord_t *coord);
 
-int hal_input_init(void);
+int hal_input_init(cst816s_irq_cb_t cb, void *arg);
 
 #ifdef __cplusplus
 }

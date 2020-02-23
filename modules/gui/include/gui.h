@@ -10,6 +10,7 @@
 #define _APP_GUI_H
 
 #include <stdint.h>
+#include "hal_input.h"
 #include "lvgl.h"
 #include "event.h"
 #include "event/timeout.h"
@@ -33,7 +34,7 @@ extern "C" {
  * of inactivity
  */
 #ifndef CONFIG_GUI_SCREEN_TIMEOUT
-#define CONFIG_GUI_SCREEN_TIMEOUT       (5 * MS_PER_SEC)
+#define CONFIG_GUI_SCREEN_TIMEOUT       (6U * MS_PER_SEC)
 #endif
 
 #define GUI_MSG_QUEUE_SIZE              8
@@ -51,6 +52,13 @@ typedef enum {
     GUI_INPUT_EVENT_SCREEN_PRESS, /* Generic whole area screen press */
     GUI_INPUT_EVENT_LEAVE,        /* Leave current GUI context */
 } gui_input_event_t;
+
+typedef enum {
+    GUI_GESTURE_UP,
+    GUI_GESTURE_DOWN,
+    GUI_GESTURE_LEFT,
+    GUI_GESTURE_RIGHT,
+} gui_event_t;
 
 typedef struct {
     gui_screen_t type;
@@ -73,6 +81,8 @@ typedef struct {
     lv_indev_drv_t indev_drv;
     lv_disp_buf_t disp_buf;
     lv_disp_t *display;
+    hal_input_coord_t coord;
+    unsigned send_press;
     msg_t msg_queue[GUI_MSG_QUEUE_SIZE];
     event_t button_press;
     event_t screen_timeout;

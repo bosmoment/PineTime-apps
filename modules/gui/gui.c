@@ -31,6 +31,7 @@
 
 #define GUI_BUF_SIZE             (LV_HOR_RES_MAX * 6)
 
+#define GUI_THREAD_FLAG_INPUT_EV       (1 << 3)
 #define GUI_THREAD_FLAG_LVGL_HANDLE    (1 << 5)
 #define GUI_THREAD_FLAG_IDLE           (1 << 6)
 #define GUI_THREAD_FLAG_WAKE           (1 << 7)
@@ -40,8 +41,6 @@ static char _stack[LVGL_STACKSIZE];
 
 static gui_t _gui;
 
-static unsigned press_hist[2];
-static hal_input_coord_t _coord;
 static void _gui_lvgl_update(gui_t *gui);
 
 static lv_color_t _buf1[GUI_BUF_SIZE];
@@ -56,23 +55,59 @@ gui_t *gui_get_ctx(void)
     return &_gui;
 }
 
+static void _gui_widget_send_event(gui_t *gui, gui_event_t ev)
+{
+    widget_t *widget = gui->active_widget;
+    if (widget && widget->spec->gui_event) {
+        widget->spec->gui_event(widget, ev);
+    }
+}
+
 static bool _input_read_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
-    hal_input_coord_t coord;
-    int res = hal_input_get_measurement(hal_input_get_context(), &coord);
-    unsigned press = res == 1 ? 1 : 0;
-    for (size_t i = 0; i < ARRAY_SIZE(press_hist) - 1; i++) {
-        press &= press_hist[i];
-        press_hist[i] = press_hist[i+1];
+    gui_t *gui = &_gui;
+    data->point.x = gui->coord.x;
+    data->point.y = gui->coord.y;
+    data->state = LV_INDEV_STATE_REL;
+    if (gui->send_press) {
+        LOG_INFO("sending click at %u:%u\n", gui->coord.x, gui->coord.y);
+        gui->send_press--;
+        data->state = LV_INDEV_STATE_PR;
     }
-    press_hist[ARRAY_SIZE(press_hist) - 1] = res;
-    if (press) {
-        memcpy(&_coord, &coord, sizeof(coord));
-    }
-    data->point.x = _coord.x;
-    data->point.y = _coord.y;
-    data->state = press == 1 ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
     return false;
+}
+
+static void _gui_read_input(gui_t *gui)
+{
+    int res = hal_input_get_measurement(hal_input_get_context(), &gui->coord);
+    if (res < 0 || !gui->display_on) {
+        return;
+    }
+    if (gui->coord.gesture == CST816S_GESTURE_SINGLE_CLICK) {
+        LOG_INFO("Single click at %u:%u\n", gui->coord.x, gui->coord.y);
+        /* Send short press */
+        gui->send_press = 1;
+    }
+    switch (gui->coord.gesture) {
+        case CST816S_GESTURE_SLIDE_UP:
+            _gui_widget_send_event(gui, GUI_GESTURE_UP);
+            break;
+        case CST816S_GESTURE_SLIDE_DOWN:
+            _gui_widget_send_event(gui, GUI_GESTURE_DOWN);
+            break;
+        case CST816S_GESTURE_SLIDE_LEFT:
+            _gui_widget_send_event(gui, GUI_GESTURE_LEFT);
+            break;
+        case CST816S_GESTURE_SLIDE_RIGHT:
+            _gui_widget_send_event(gui, GUI_GESTURE_RIGHT);
+            break;
+    }
+}
+
+static void _input_cb(cst816s_t *dev, void *arg)
+{
+    gui_t *gui = arg;
+    thread_flags_set((thread_t*)thread_get(gui->pid), GUI_THREAD_FLAG_INPUT_EV);
 }
 
 /* Switch the screen displayed */
@@ -111,6 +146,14 @@ int gui_event_submit_switch_widget(widget_t *widget)
 int lvgl_thread_create(void)
 {
     gui_t *gui = &_gui;
+
+    if (hal_input_init(_input_cb, gui) == 0) {
+        LOG_INFO("[cst816s]: OK!\n");
+    }
+    else {
+        LOG_ERROR("[cst816s]: Device initialization failed\n");
+    }
+
     lv_disp_buf_init(&gui->disp_buf, _buf1, _buf2, GUI_BUF_SIZE);
     lv_disp_drv_init(&gui->disp_drv);            /*Basic initialization*/
     lv_indev_drv_init(&gui->indev_drv);
@@ -173,10 +216,10 @@ static void _gui_button_event(event_t *event)
 
 static void _gui_screen_timeout(event_t *event)
 {
-    LOG_INFO("[gui] Screen off after timeout\n");
     gui_t *gui = container_of(event, gui_t, screen_timeout);
     uint32_t inactive_time = lv_disp_get_inactive_time(NULL);
     if (inactive_time  >= CONFIG_GUI_SCREEN_TIMEOUT) {
+        LOG_INFO("[gui] Screen off after timeout\n");
         /* Turn screen off */
         gui->display_on = false;
         hal_display_off();
@@ -246,6 +289,7 @@ static void *_lvgl_thread(void* arg)
             GUI_THREAD_FLAG_IDLE |
             GUI_THREAD_FLAG_WAKE |
             GUI_THREAD_FLAG_LVGL_HANDLE |
+            GUI_THREAD_FLAG_INPUT_EV |
             THREAD_FLAG_EVENT |
             THREAD_FLAG_MSG_WAITING
             );
@@ -266,6 +310,10 @@ static void *_lvgl_thread(void* arg)
         }
         if (flag & GUI_THREAD_FLAG_LVGL_HANDLE) {
             _gui_lvgl_update(gui);
+        }
+        if (flag & GUI_THREAD_FLAG_INPUT_EV) {
+            puts("Input EV flag");
+            _gui_read_input(gui);
         }
         if (flag & GUI_THREAD_FLAG_IDLE) {
             /* idle handling */

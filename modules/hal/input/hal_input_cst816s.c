@@ -29,17 +29,17 @@ void *hal_input_get_context(void)
     return (input_t*)&_input_dev;
 }
 
-int hal_input_init(void)
+int hal_input_init(cst816s_irq_cb_t cb, void *arg)
 {
-    return cst816s_init(&_input_dev, &_cst816s_input_params, NULL, NULL);
+    return cst816s_init(&_input_dev, &_cst816s_input_params, cb, arg);
 }
 
 int hal_input_get_measurement(input_t *input, hal_input_coord_t *coord)
 {
     cst816s_t *dev = (cst816s_t*)input;
     cst816s_touch_data_t touch;
-    int res = cst816s_read(dev, &touch, 1);
-    if (res <= 0) {
+    int res = cst816s_read(dev, &touch);
+    if (res < 0) {
         /* No touch */
         return 0;
     }
@@ -59,6 +59,7 @@ int hal_input_get_measurement(input_t *input, hal_input_coord_t *coord)
     coord->x = x;
     coord->y = y;
 #endif
+    coord->gesture = touch.gesture;
     return 1;
 }
 
