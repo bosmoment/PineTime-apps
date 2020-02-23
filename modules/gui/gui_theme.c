@@ -55,10 +55,10 @@ static void basic_init(void)
     panel.body.border.color   = lv_color_hsv_to_rgb(_hue, 10, 25);
     panel.body.border.width   = 1;
     panel.body.border.opa     = LV_OPA_COVER;
-    panel.body.padding.left   = LV_DPI / 10;
-    panel.body.padding.right  = LV_DPI / 10;
-    panel.body.padding.top    = LV_DPI / 10;
-    panel.body.padding.bottom = LV_DPI / 10;
+    panel.body.padding.left   = LV_DPI / 60;
+    panel.body.padding.right  = LV_DPI / 60;
+    panel.body.padding.top    = LV_DPI / 60;
+    panel.body.padding.bottom = LV_DPI / 60;
     panel.line.color          = lv_color_hsv_to_rgb(_hue, 20, 40);
     panel.line.width          = 1;
 
