@@ -16,8 +16,11 @@
 #include "kernel_defines.h"
 #include "bleman.h"
 #include "xtimer.h"
+#include "gui.h"
 
 #include "sysinfo.h"
+
+#define SYSINFO_SCROLL_DISTANCE 180
 
 static const widget_spec_t _sysinfo_spec;
 static int sysinfo_event(widget_t *widget, controller_event_t event);
@@ -79,19 +82,6 @@ static void _sysinfo_set_label(sysinfo_widget_t *sysinfo)
                           sysinfo->reset_string);
 }
 
-static void _pressed(lv_obj_t *obj, lv_event_t event)
-{
-    sysinfo_widget_t *sysinfo= active_widget();
-    switch (event) {
-        case LV_EVENT_CLICKED:
-            LOG_INFO("Screen press event\n");
-            controller_action_submit_input_action(&sysinfo->widget,
-                                                CONTROLLER_ACTION_WIDGET_LEAVE, NULL);
-        default:
-            break;
-    }
-}
-
 static lv_obj_t *_sysinfo_screen_create(sysinfo_widget_t *sysinfo)
 {
     /* Show:
@@ -108,6 +98,7 @@ static lv_obj_t *_sysinfo_screen_create(sysinfo_widget_t *sysinfo)
     lv_obj_t *page = lv_page_create(scr, NULL);
     lv_obj_set_size(page, 240, 240);
     lv_obj_align(page, NULL, LV_ALIGN_CENTER, 0, 0);
+    sysinfo->page = page;
 
     sysinfo->info_label = lv_label_create(page, NULL);
     lv_obj_set_width(sysinfo->info_label, lv_page_get_fit_width(page));
@@ -115,11 +106,6 @@ static lv_obj_t *_sysinfo_screen_create(sysinfo_widget_t *sysinfo)
     lv_label_set_recolor(sysinfo->info_label, true);
 
     _sysinfo_set_label(sysinfo);
-
-    lv_obj_set_click(scr, true);
-    lv_obj_set_event_cb(scr, _pressed);
-    lv_obj_set_event_cb(page, _pressed);
-    lv_obj_set_event_cb(sysinfo->info_label, _pressed);
 
     return scr;
 }
@@ -194,6 +180,27 @@ static int sysinfo_event(widget_t *widget, controller_event_t event)
     return 0;
 }
 
+static int sysinfo_gui_event(widget_t *widget, int event)
+{
+    sysinfo_widget_t *sysinfo = _from_widget(widget);
+    switch (event) {
+        case GUI_EVENT_GESTURE_UP:
+            lv_page_scroll_ver(sysinfo->page, -SYSINFO_SCROLL_DISTANCE);
+            break;
+        case GUI_EVENT_GESTURE_DOWN:
+            lv_page_scroll_ver(sysinfo->page, SYSINFO_SCROLL_DISTANCE);
+            break;
+        case GUI_EVENT_GESTURE_LEFT:
+            controller_action_submit_input_action(&sysinfo->widget,
+                                                  CONTROLLER_ACTION_WIDGET_LEAVE, NULL);
+            break;
+        case GUI_EVENT_GESTURE_RIGHT:
+            break;
+    }
+
+    return 0;
+}
+
 static const widget_spec_t _sysinfo_spec = {
     .name = "system info",
     .label = "system info",
@@ -203,5 +210,6 @@ static const widget_spec_t _sysinfo_spec = {
     .container = sysinfo_get_container,
     .close = sysinfo_close,
     .event = sysinfo_event,
+    .gui_event = sysinfo_gui_event,
     .update_draw = sysinfo_update_screen,
 };

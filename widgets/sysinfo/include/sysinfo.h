@@ -22,6 +22,7 @@ typedef struct _sysinfo_widget {
     control_event_handler_t handler;
     lv_obj_t *screen;
     lv_obj_t *info_label;
+    lv_obj_t *page;
     uint64_t uptime;
     const char *reset_string;
     uint16_t battery_voltage;
