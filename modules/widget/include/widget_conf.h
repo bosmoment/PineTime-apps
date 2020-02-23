@@ -14,6 +14,12 @@
 #include "time_conf.h"
 #include "menu_tiles_conf.h"
 
+#if MODULE_WIDGET_SYSINFO
+#include "sysinfo.h"
+extern sysinfo_widget_t sysinfo_widget;
+#define WIDGET_SYSINFO (&sysinfo_widget.widget)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,6 +39,9 @@ extern "C" {
 static const widget_map_t widgets_installed[] = {
     CONFIG_WIDGET_HOME,
     CONFIG_WIDGET_MENU,
+#if MODULE_WIDGET_SYSINFO
+    WIDGET_SYSINFO
+#endif
 };
 
 #ifdef __cplusplus

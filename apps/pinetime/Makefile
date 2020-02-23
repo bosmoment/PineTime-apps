@@ -12,6 +12,7 @@ DEVELHELP ?= 1
 
 USEWIDGETS += home_time
 USEWIDGETS += menu_tiles
+USEWIDGETS += sysinfo
 
 # basic modules
 include $(CURDIR)/modules.mk
