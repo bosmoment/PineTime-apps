@@ -76,7 +76,8 @@ controller_t *controller_get(void);
 uint16_t controller_get_battery_voltage(controller_t *controller);
 
 int controller_action_submit_input_action(widget_t *widget,
-                                        controller_action_widget_t action);
+                                        controller_action_widget_t action,
+                                        void *arg);
 
 void controller_add_control_handler(controller_t *controller,
                                     control_event_handler_t *handler);

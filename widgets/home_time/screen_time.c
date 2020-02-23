@@ -60,7 +60,7 @@ static void _screen_time_pressed(lv_obj_t *obj, lv_event_t event)
         case LV_EVENT_CLICKED:
             LOG_INFO("Screen press event\n");
             controller_action_submit_input_action(&ht->widget,
-                                                CONTROLLER_ACTION_WIDGET_LEAVE);
+                                                CONTROLLER_ACTION_WIDGET_MENU, NULL);
         default:
             break;
     }

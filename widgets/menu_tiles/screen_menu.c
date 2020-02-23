@@ -37,7 +37,7 @@ static void _screen_menu_exit(lv_obj_t *obj, lv_event_t event)
         case LV_EVENT_CLICKED:
             LOG_INFO("Menu button press event\n");
             controller_action_submit_input_action(&ht->widget,
-                                                CONTROLLER_ACTION_WIDGET_HOME);
+                                                CONTROLLER_ACTION_WIDGET_LEAVE, NULL);
         default:
             break;
     }

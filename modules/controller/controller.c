@@ -39,6 +39,7 @@ typedef struct {
     ts_event_t super;
     widget_t *widget;
     controller_action_widget_t action;
+    void *arg;
 } controller_widget_event_t;
 
 static controller_widget_event_t ev_widget = {
@@ -50,11 +51,13 @@ static void _handle_input_event(event_t *event)
     controller_widget_event_t *ev = (controller_widget_event_t*)event;
     switch(ev->action) {
         case CONTROLLER_ACTION_WIDGET_LEAVE:
-            gui_event_submit_switch_widget(widget_get_menu());
-            break;
-        case CONTROLLER_ACTION_WIDGET_HOME:
             gui_event_submit_switch_widget(widget_get_home());
             break;
+        case CONTROLLER_ACTION_WIDGET_MENU:
+            gui_event_submit_switch_widget(widget_get_menu());
+            break;
+        case CONTROLLER_ACTION_WIDGET_SWITCH_TO:
+            gui_event_submit_switch_widget(ev->arg);
         default:
             break;
     }
@@ -66,7 +69,7 @@ inline uint16_t controller_get_battery_voltage(controller_t *controller)
     return controller_battery_get_voltage(&controller->batt);
 }
 
-int controller_action_submit_input_action(widget_t *widget, controller_action_widget_t action)
+int controller_action_submit_input_action(widget_t *widget, controller_action_widget_t action, void *arg)
 {
     if (ts_event_claim(&ev_widget.super) == -EBUSY) {
         return -EBUSY;
@@ -74,6 +77,7 @@ int controller_action_submit_input_action(widget_t *widget, controller_action_wi
     LOG_DEBUG("[controller] Submitting widget action\n");
     ev_widget.widget = widget;
     ev_widget.action = action;
+    ev_widget.arg = arg;
     event_post(&_control.queue, &ev_widget.super.super);
     return 0;
 }
