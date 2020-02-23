@@ -54,10 +54,11 @@ typedef enum {
 } gui_input_event_t;
 
 typedef enum {
-    GUI_GESTURE_UP,
-    GUI_GESTURE_DOWN,
-    GUI_GESTURE_LEFT,
-    GUI_GESTURE_RIGHT,
+    GUI_EVENT_NONE = 0,
+    GUI_EVENT_GESTURE_UP,
+    GUI_EVENT_GESTURE_DOWN,
+    GUI_EVENT_GESTURE_LEFT,
+    GUI_EVENT_GESTURE_RIGHT,
 } gui_event_t;
 
 typedef struct {

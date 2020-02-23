@@ -88,19 +88,27 @@ static void _gui_read_input(gui_t *gui)
         /* Send short press */
         gui->send_press = 1;
     }
+    gui_event_t ev = GUI_EVENT_NONE;
     switch (gui->coord.gesture) {
         case CST816S_GESTURE_SLIDE_UP:
-            _gui_widget_send_event(gui, GUI_GESTURE_UP);
+            ev = GUI_EVENT_GESTURE_UP;
             break;
         case CST816S_GESTURE_SLIDE_DOWN:
-            _gui_widget_send_event(gui, GUI_GESTURE_DOWN);
+            ev = GUI_EVENT_GESTURE_DOWN;
             break;
         case CST816S_GESTURE_SLIDE_LEFT:
-            _gui_widget_send_event(gui, GUI_GESTURE_LEFT);
+            ev = GUI_EVENT_GESTURE_LEFT;
             break;
         case CST816S_GESTURE_SLIDE_RIGHT:
-            _gui_widget_send_event(gui, GUI_GESTURE_RIGHT);
+            ev = GUI_EVENT_GESTURE_RIGHT;
             break;
+        default:
+            break;
+    }
+    if (!(ev == GUI_EVENT_NONE)) {
+        /* Manually signal activity to LVGL */
+        lv_disp_trig_activity(gui->display);
+        _gui_widget_send_event(gui, ev);
     }
 }
 
