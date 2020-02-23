@@ -101,13 +101,6 @@ static void _submit_events(controller_t *controller, controller_event_t event)
     }
 }
 
-static void _controller_wdt_setup(controller_t *controller)
-{
-    /* Timeout + half a second for good measure :) */
-    wdt_setup_reboot(0, CONTROLLER_WDT_TIMEOUT_SEC * MS_PER_SEC + 500);
-    wdt_start();
-}
-
 static void _controller_wdt_kick(controller_t *controller)
 {
     if (CONTROLLER_WDT_RESET_ON_BUTTON_PRESS) {
@@ -118,6 +111,14 @@ static void _controller_wdt_kick(controller_t *controller)
     }
 
     wdt_kick();
+}
+
+static void _controller_wdt_setup(controller_t *controller)
+{
+    /* Timeout + half a second for good measure :) */
+    wdt_setup_reboot(0, CONTROLLER_WDT_TIMEOUT_SEC * MS_PER_SEC + 500);
+    wdt_start();
+    _controller_wdt_kick(controller);
 }
 
 #ifdef MODULE_BLEMAN
