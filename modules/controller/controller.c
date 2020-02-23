@@ -46,18 +46,26 @@ static controller_widget_event_t ev_widget = {
     .super = { .super = { .handler = _handle_input_event } }
 };
 
+static void _switch_widget(widget_t *widget)
+{
+    if (widget->spec->launch) {
+        widget_launch(widget);
+    }
+    gui_event_submit_switch_widget(widget);
+}
+
 static void _handle_input_event(event_t *event)
 {
     controller_widget_event_t *ev = (controller_widget_event_t*)event;
     switch(ev->action) {
         case CONTROLLER_ACTION_WIDGET_LEAVE:
-            gui_event_submit_switch_widget(widget_get_home());
+            _switch_widget(widget_get_home());
             break;
         case CONTROLLER_ACTION_WIDGET_MENU:
-            gui_event_submit_switch_widget(widget_get_menu());
+            _switch_widget(widget_get_menu());
             break;
         case CONTROLLER_ACTION_WIDGET_SWITCH_TO:
-            gui_event_submit_switch_widget(ev->arg);
+            _switch_widget(ev->arg);
         default:
             break;
     }
