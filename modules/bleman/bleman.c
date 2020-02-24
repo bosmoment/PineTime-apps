@@ -50,11 +50,11 @@ extern int bleman_bas_handler(uint16_t conn_handle, uint16_t attr_handle,
                               struct ble_gatt_access_ctxt *ctxt, void *arg);
 static int _devinfo_handler(uint16_t conn_handle, uint16_t attr_handle,
                             struct ble_gatt_access_ctxt *ctxt, void *arg);
-static uint16_t _hrs_val_handle;
 
 #include "bleman_conf.h"
 
 extern int bleman_bas_init(bleman_t *bleman, bleman_bas_t *bas);
+extern int bleman_hrs_init(bleman_t *bleman, bleman_hrs_t *hrs);
 
 int bleman_thread_create(void)
 {
@@ -141,12 +141,12 @@ static int _gap_event_cb(struct ble_gap_event *event, void *arg)
             break;
 
         case BLE_GAP_EVENT_SUBSCRIBE:
-            if (event->subscribe.attr_handle == _hrs_val_handle) {
+            if (event->subscribe.attr_handle == bleman->hrs.handle) {
                 if (event->subscribe.cur_notify == 1) {
-                    //_start_updating();
+                   bleman_hrs_notify(&bleman->hrs, true);
                 }
                 else {
-                    //_stop_updating();
+                   bleman_hrs_notify(&bleman->hrs, false);
                 }
             }
             else if (event->subscribe.attr_handle == bleman->bas.handle) {
@@ -262,6 +262,7 @@ static void *_bleman_thread(void *arg)
     //_read_evt.handler = _read_handler;
 
     bleman_bas_init(bleman, &bleman->bas);
+    bleman_hrs_init(bleman, &bleman->hrs);
 
     /* verify and add our custom services */
     res = ble_gatts_count_cfg(gatt_svr_svcs);

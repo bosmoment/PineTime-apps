@@ -17,6 +17,7 @@
 #include "thread.h"
 #include "xtimer.h"
 #include "bleman/bas.h"
+#include "bleman/hrs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,6 +84,7 @@ struct _bleman {
     bleman_event_handler_t *handlers;
     bleman_ble_state_t state;
     bleman_bas_t bas;
+    bleman_hrs_t hrs;
 };
 
 int bleman_thread_create(void);

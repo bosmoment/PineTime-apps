@@ -35,7 +35,7 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
         .characteristics = (struct ble_gatt_chr_def[]) { {
             .uuid = BLE_UUID16_DECLARE(BLE_GATT_CHAR_HEART_RATE_MEASURE),
             .access_cb = bleman_hrs_handler,
-            .val_handle = &_hrs_val_handle,
+            .val_handle = &_bleman.hrs.handle,
             .flags = BLE_GATT_CHR_F_NOTIFY,
         }, {
             .uuid = BLE_UUID16_DECLARE(BLE_GATT_CHAR_BODY_SENSE_LOC),
