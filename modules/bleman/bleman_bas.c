@@ -14,11 +14,6 @@
 #include "services/gatt/ble_svc_gatt.h"
 #include "controller.h"
 
-typedef struct __attribute__((packed)) {
-    uint8_t flags;
-    uint16_t level;
-} battery_bas_data_t;
-
 static void _bas_update(event_t *event)
 {
     struct os_mbuf *om;
