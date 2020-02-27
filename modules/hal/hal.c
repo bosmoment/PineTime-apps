@@ -47,6 +47,11 @@ void hal_display_on(void)
     gpio_set(LCD_BACKLIGHT_HIGH);
 }
 
+void hal_display_scroll(uint16_t lines)
+{
+    ili9341_set_scroll_start(hal_display_get_context(), lines);
+}
+
 uint32_t hal_battery_read_voltage(void)
 {
     int sample = adc_sample(BATTERY_ADC, ADC_RES_12BIT);
@@ -118,6 +123,9 @@ void hal_init(void)
         //ili9341_set_brightness(&_disp_dev, 0xff);
         LOG_INFO("[ILI9341]: OK!\n");
         display_on = false;
+
+        ili9341_set_fixed_scroll_area(&_disp_dev, 0, 0);
+        hal_display_scroll(0);
     }
     else {
         LOG_ERROR("[ILI9341]: Device initialization failed\n");
