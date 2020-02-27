@@ -49,6 +49,9 @@ static lv_color_t _buf2[GUI_BUF_SIZE];
 extern lv_obj_t *screen_time_create(void);
 extern lv_obj_t *screen_menu_create(void);
 
+extern void gui_dispatcher_display_flush_cb(struct _disp_drv_t * disp_drv,
+                              const lv_area_t * area, lv_color_t * color_p);
+
 
 gui_t *gui_get_ctx(void)
 {
@@ -162,17 +165,21 @@ int lvgl_thread_create(void)
         LOG_ERROR("[cst816s]: Device initialization failed\n");
     }
 
+    lv_disp_drv_t disp_drv;
     lv_disp_buf_init(&gui->disp_buf, _buf1, _buf2, GUI_BUF_SIZE);
-    lv_disp_drv_init(&gui->disp_drv);            /*Basic initialization*/
-    lv_indev_drv_init(&gui->indev_drv);
+    lv_disp_drv_init(&disp_drv);            /*Basic initialization*/
 
     gui_dispatcher_thread_create(gui);
-    gui->disp_drv.buffer = &gui->disp_buf;
-    gui->indev_drv.type = LV_INDEV_TYPE_POINTER;
-    gui->indev_drv.read_cb = _input_read_cb;
+    disp_drv.buffer = &gui->disp_buf;
+    disp_drv.flush_cb = gui_dispatcher_display_flush_cb;
 
-    gui->display = lv_disp_drv_register(&gui->disp_drv);
-    lv_indev_drv_register(&gui->indev_drv);
+    gui->display = lv_disp_drv_register(&disp_drv);
+
+    lv_indev_drv_t indev_drv;
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_POINTER;
+    indev_drv.read_cb = _input_read_cb;
+    lv_indev_drv_register(&indev_drv);
 
     int res = thread_create(_stack, LVGL_STACKSIZE, LVGL_THREAD_PRIO,
                             THREAD_CREATE_STACKTEST, _lvgl_thread,

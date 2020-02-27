@@ -78,8 +78,6 @@ typedef struct {
 } gui_flush_event_t;
 
 typedef struct {
-    lv_disp_drv_t disp_drv;
-    lv_indev_drv_t indev_drv;
     lv_disp_buf_t disp_buf;
     lv_disp_t *display;
     hal_input_coord_t coord;

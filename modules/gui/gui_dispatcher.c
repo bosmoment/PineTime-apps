@@ -34,11 +34,10 @@ static gui_flush_event_t ev[2] = {
     }
 };
 
-
-static void _display_flush_cb(struct _disp_drv_t * disp_drv,
+/* Called from the main gui thread */
+void gui_dispatcher_display_flush_cb(struct _disp_drv_t * disp_drv,
                               const lv_area_t * area, lv_color_t * color_p)
 {
-
     gui_flush_event_t *flush_event = NULL;
     for (size_t i = 0; i < ARRAY_SIZE(ev); i++) {
         if (ev[i].used == 0) {
@@ -55,13 +54,13 @@ static void _display_flush_cb(struct _disp_drv_t * disp_drv,
     flush_event->y2 = area->y2;
     flush_event->map = (uint16_t*)color_p;
     flush_event->drv = disp_drv;
+
     event_post(&_queue, (event_t*)flush_event);
     /* Dispatch event */
 }
 
 int gui_dispatcher_thread_create(gui_t *gui)
 {
-    gui->disp_drv.flush_cb = _display_flush_cb;
     int res = thread_create(_dispatch_stack, DISPATCHER_STACKSIZE,
                             DISPATCHER_THREAD_PRIO,
                             THREAD_CREATE_STACKTEST, _gui_dispatcher,
