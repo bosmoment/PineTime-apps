@@ -40,6 +40,8 @@ extern "C" {
 #define GUI_MSG_QUEUE_SIZE              8
 
 #define GUI_MSG_SWITCH_WIDGET           0x0001
+#define GUI_MSG_SWITCH_WIDGET_UP        0x0002
+#define GUI_MSG_SWITCH_WIDGET_DOWN      0x0003
 
 typedef enum {
     GUI_SCREEN_NONE,
@@ -61,6 +63,12 @@ typedef enum {
     GUI_EVENT_GESTURE_RIGHT,
 } gui_event_t;
 
+typedef enum {
+    GUI_SCROLL_DIRECTION_NONE = 0,  /**< No scroll */
+    GUI_SCROLL_DIRECTION_UP,    /**< Scroll pointer up, new pixels above current */
+    GUI_SCROLL_DIRECTION_DOWN,  /**< Scroll pointer down, new pixels below current */
+} gui_scroll_direction_t;
+
 typedef struct {
     gui_screen_t type;
     lv_obj_t *(*create)(void);
@@ -75,11 +83,13 @@ typedef struct {
     uint16_t y2;
     uint16_t *map;
     bool used;
+    gui_scroll_direction_t direction;
 } gui_flush_event_t;
 
 typedef struct {
     lv_disp_buf_t disp_buf;
     lv_disp_t *display;
+    uint16_t offset;                      /**< Current row offset */
     hal_input_coord_t coord;
     unsigned send_press;
     msg_t msg_queue[GUI_MSG_QUEUE_SIZE];
@@ -93,6 +103,7 @@ typedef struct {
     bool button_enabled;
     kernel_pid_t pid;
     bool display_on;
+    gui_scroll_direction_t refresh_mode; /**< Full refresh scroll mode */
 } gui_t;
 
 typedef struct {
@@ -102,7 +113,8 @@ typedef struct {
 
 gui_t *gui_get_ctx(void);
 
-int gui_event_submit_switch_widget(widget_t *widget);
+int gui_event_submit_switch_widget(widget_t *widget,
+                                   gui_scroll_direction_t dir);
 #ifdef __cplusplus
 }
 #endif

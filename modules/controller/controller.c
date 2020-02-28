@@ -51,7 +51,7 @@ static void _switch_widget(widget_t *widget)
     if (widget->spec->launch) {
         widget_launch(widget);
     }
-    gui_event_submit_switch_widget(widget);
+    gui_event_submit_switch_widget(widget, GUI_SCROLL_DIRECTION_NONE);
 }
 
 static void _handle_input_event(event_t *event)
@@ -174,7 +174,7 @@ static void *_control_thread(void* arg)
 
     widget_init_installed();
 
-    gui_event_submit_switch_widget(widget_get_home());
+    gui_event_submit_switch_widget(widget_get_home(), GUI_SCROLL_DIRECTION_NONE);
     while(1)
     {
         thread_flags_t flags = thread_flags_wait_any(

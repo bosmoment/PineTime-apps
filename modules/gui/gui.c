@@ -52,6 +52,33 @@ extern lv_obj_t *screen_menu_create(void);
 extern void gui_dispatcher_display_flush_cb(struct _disp_drv_t * disp_drv,
                               const lv_area_t * area, lv_color_t * color_p);
 
+static gui_scroll_direction_t _msgtype2dir(uint16_t type)
+{
+    switch(type) {
+        case GUI_MSG_SWITCH_WIDGET:
+            return GUI_SCROLL_DIRECTION_NONE;
+        case GUI_MSG_SWITCH_WIDGET_UP:
+            return GUI_SCROLL_DIRECTION_UP;
+        case GUI_MSG_SWITCH_WIDGET_DOWN:
+            return GUI_SCROLL_DIRECTION_DOWN;
+        default:
+            return GUI_SCROLL_DIRECTION_NONE;
+    }
+}
+
+static uint16_t _dir2msgtype(gui_scroll_direction_t dir)
+{
+    switch(dir) {
+        case GUI_SCROLL_DIRECTION_NONE:
+            return GUI_MSG_SWITCH_WIDGET;
+        case GUI_SCROLL_DIRECTION_UP:
+            return GUI_MSG_SWITCH_WIDGET_UP;
+        case GUI_SCROLL_DIRECTION_DOWN:
+            return GUI_MSG_SWITCH_WIDGET_DOWN;
+        default:
+            return GUI_MSG_SWITCH_WIDGET;
+    }
+}
 
 gui_t *gui_get_ctx(void)
 {
@@ -122,9 +149,10 @@ static void _input_cb(cst816s_t *dev, void *arg)
 }
 
 /* Switch the screen displayed */
-static void _switch_widget_draw(gui_t *gui, widget_t *widget)
+static void _switch_widget_draw(gui_t *gui, widget_t *widget, uint16_t type)
 {
-    LOG_INFO("[GUI]: switching screen to \"%s\"\n", widget->spec->name);
+    gui_scroll_direction_t dir = _msgtype2dir(type);
+    LOG_INFO("[GUI]: switching screen to \"%s\" with %u\n", widget->spec->name, dir);
     if (widget == gui->active_widget) {
         return;
     }
@@ -134,6 +162,11 @@ static void _switch_widget_draw(gui_t *gui, widget_t *widget)
         widget_close(gui->active_widget);
     }
     gui->active_widget = widget;
+    LOG_INFO("[gui]: enabling full refresh\n");
+    if (dir == GUI_SCROLL_DIRECTION_UP) {
+        lv_disp_set_direction(gui->display, 1);
+    }
+    gui->refresh_mode = dir;
 }
 
 static void _gui_update_widget_draw(gui_t *gui)
@@ -145,11 +178,11 @@ static void _gui_update_widget_draw(gui_t *gui)
 }
 
 
-int gui_event_submit_switch_widget(widget_t *widget)
+int gui_event_submit_switch_widget(widget_t *widget, gui_scroll_direction_t dir)
 {
     gui_t *gui = gui_get_ctx();
     msg_t msg;
-    msg.type = GUI_MSG_SWITCH_WIDGET;
+    msg.type = _dir2msgtype(dir);
     msg.content.ptr = widget;
     return msg_send(&msg, gui->pid);
 }
@@ -261,7 +294,9 @@ static void _gui_handle_msg(gui_t *gui, msg_t *msg)
 {
     switch(msg->type) {
         case GUI_MSG_SWITCH_WIDGET:
-            _switch_widget_draw(gui, msg->content.ptr);
+        case GUI_MSG_SWITCH_WIDGET_UP:
+        case GUI_MSG_SWITCH_WIDGET_DOWN:
+            _switch_widget_draw(gui, msg->content.ptr, msg->type);
             break;
         default:
             LOG_ERROR("[gui]: Unhandled msg of type %"PRIu16"\n", msg->type);
@@ -283,6 +318,7 @@ static void *_lvgl_thread(void* arg)
 
     lv_theme_t *th = gui_theme_init(10, NULL);
     lv_theme_set_current(th);
+
 
     event_queue_claim(&gui->queue);
 
