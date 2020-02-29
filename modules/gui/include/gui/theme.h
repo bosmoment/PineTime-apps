@@ -11,6 +11,7 @@
 
 #include "gui.h"
 #include "event.h"
+#include "gui/color.h"
 
 #ifdef __cplusplus
 extern "C" {
