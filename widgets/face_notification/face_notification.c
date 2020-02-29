@@ -10,11 +10,12 @@
 #include "log.h"
 #include "lvgl.h"
 #include "gui.h"
+#include "gui/theme.h"
 #include "controller.h"
 #include "kernel_defines.h"
 
 
-static const char title_text[] = LV_SYMBOL_BELL " Notifications";
+static const char title_text[] = GUI_COLOR_LBL_DARK_BLUE " " LV_SYMBOL_BELL " # Notifications";
 static const lv_point_t line_point[] = { {5, 0}, {235, 0} };
 static const widget_spec_t face_notification_spec;
 
@@ -51,6 +52,7 @@ lv_obj_t *face_notif_create(face_notification_widget_t *fn)
     lv_obj_set_event_cb(scr, _face_notif_pressed);
 
     lv_obj_t *title = lv_label_create(scr, NULL);
+    lv_label_set_recolor(title, true);
     lv_label_set_text(title, title_text);
     lv_obj_align(title, scr, LV_ALIGN_IN_TOP_LEFT, 5, 10);
 
