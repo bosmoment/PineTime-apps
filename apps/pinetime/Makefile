@@ -13,6 +13,8 @@ DEVELHELP ?= 1
 USEWIDGETS += home_time
 USEWIDGETS += menu_tiles
 USEWIDGETS += sysinfo
+USEWIDGETS += face_notification
+USEWIDGETS += face_sports
 
 # basic modules
 include $(CURDIR)/modules.mk
