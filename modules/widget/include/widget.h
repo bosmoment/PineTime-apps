@@ -151,6 +151,8 @@ int widget_update_draw(widget_t *widget);
 int widget_close(widget_t *widget);
 void widget_init_local(widget_t *widget);
 
+int widget_face_gui_event(widget_t *widget, int event);
+
 static inline bool widget_is_dirty(widget_t *widget)
 {
     return widget->dirty == 1;

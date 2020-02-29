@@ -37,12 +37,16 @@ extern "C" {
 #endif /* CONFIG_WIDGET_MENU */
 
 static const widget_map_t widgets_installed[] = {
-    CONFIG_WIDGET_HOME,
-    CONFIG_WIDGET_MENU,
 #if MODULE_WIDGET_SYSINFO
-    WIDGET_SYSINFO
+    WIDGET_SYSINFO,
 #endif
 };
+
+static const widget_map_t widget_faces_installed[] = {
+    CONFIG_WIDGET_HOME,
+};
+
+static const size_t widget_faces_num = ARRAY_SIZE(widget_faces_installed);
 
 #ifdef __cplusplus
 }

@@ -52,8 +52,12 @@ void widget_init_local(widget_t *widget)
 
 void widget_init_installed(void)
 {
+    widget_init(CONFIG_WIDGET_MENU);
     for (size_t i = 0; i < ARRAY_SIZE(widgets_installed); i++) {
         widget_init(widgets_installed[i]);
+    }
+    for (size_t i = 0; i < ARRAY_SIZE(widget_faces_installed); i++) {
+        widget_init(widget_faces_installed[i]);
     }
 }
 
@@ -80,4 +84,28 @@ void widget_release_control_lock(widget_t *widget)
 {
     widget->dirty = 1;
     mutex_unlock(&widget->update);
+}
+
+int widget_face_gui_event(widget_t *widget, int event)
+{
+    switch (event) {
+        case GUI_EVENT_GESTURE_UP:
+            /* Next widget */
+            controller_action_submit_input_action(widget,
+                                                  CONTROLLER_ACTION_WIDGET_FACE_NEXT, NULL);
+            break;
+            /* Previous widget */
+        case GUI_EVENT_GESTURE_DOWN:
+            controller_action_submit_input_action(widget,
+                                                  CONTROLLER_ACTION_WIDGET_FACE_PREVIOUS, NULL);
+            break;
+            /* Menu */
+        case GUI_EVENT_GESTURE_LEFT:
+            controller_action_submit_input_action(widget,
+                                                  CONTROLLER_ACTION_WIDGET_MENU, NULL);
+            break;
+        case GUI_EVENT_GESTURE_RIGHT:
+            break;
+    }
+    return 0;
 }
