@@ -63,10 +63,10 @@ typedef struct {
 #ifdef MODULE_BLEMAN
     bleman_event_handler_t handler;
 #endif
-    widget_t *active_widget;
     control_event_handler_t *handlers;
     kernel_pid_t pid;
     hal_reset_reason_t reset_reason;    /**< Current reset reason */
+    size_t face_idx;
 } controller_t;
 
 #define CONTROLLER_EVENT_FLAG(flag)     (1 << flag)

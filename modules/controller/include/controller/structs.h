@@ -26,6 +26,8 @@ typedef enum {
     CONTROLLER_ACTION_WIDGET_LEAVE, /* Leave widget and return to the home screen */
     CONTROLLER_ACTION_WIDGET_MENU,  /* Switch to the menu */
     CONTROLLER_ACTION_WIDGET_SWITCH_TO, /* Switch to a specific widget */
+    CONTROLLER_ACTION_WIDGET_FACE_NEXT, /* Switch to the next watch face */
+    CONTROLLER_ACTION_WIDGET_FACE_PREVIOUS, /* Switch to the previous watch face */
 } controller_action_widget_t;
 /** @} */
 
