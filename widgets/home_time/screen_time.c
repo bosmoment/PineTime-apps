@@ -267,9 +267,11 @@ int home_time_event(widget_t *widget, controller_event_t event)
 static const widget_spec_t home_time_spec = {
     .name = "time",
     .init = home_time_init,
+    .launch = home_time_launch,
     .draw = home_time_draw,
     .container = home_time_get_container,
     .close = home_time_close,
     .event = home_time_event,
     .update_draw = home_time_update_screen,
+    .gui_event = widget_face_gui_event,
 };
