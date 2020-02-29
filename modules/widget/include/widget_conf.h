@@ -14,14 +14,26 @@
 #include "time_conf.h"
 #include "menu_tiles_conf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if MODULE_WIDGET_SYSINFO
 #include "sysinfo.h"
 extern sysinfo_widget_t sysinfo_widget;
 #define WIDGET_SYSINFO (&sysinfo_widget.widget)
 #endif
 
-#ifdef __cplusplus
-extern "C" {
+#if MODULE_WIDGET_FACE_NOTIFICATION
+#include "face_notification.h"
+extern face_notification_widget_t face_notification_widget;
+#define WIDGET_FACE_NOTIF (&face_notification_widget.widget)
+#endif
+
+#if MODULE_WIDGET_FACE_SPORTS
+#include "face_sports.h"
+extern face_sports_widget_t face_sports_widget;
+#define WIDGET_FACE_SPORTS (&face_sports_widget.widget)
 #endif
 
 /**
@@ -44,6 +56,12 @@ static const widget_map_t widgets_installed[] = {
 
 static const widget_map_t widget_faces_installed[] = {
     CONFIG_WIDGET_HOME,
+#if MODULE_WIDGET_FACE_NOTIFICATION
+    WIDGET_FACE_NOTIF,
+#endif
+#if MODULE_WIDGET_FACE_SPORTS
+    WIDGET_FACE_SPORTS,
+#endif
 };
 
 static const size_t widget_faces_num = ARRAY_SIZE(widget_faces_installed);
