@@ -23,6 +23,23 @@
 static ili9341_t _disp_dev;
 static bool display_on;
 
+typedef struct {
+    uint32_t bound; /**< Upper bound of this region */
+    int32_t A;
+    int32_t B;
+} hal_battery_piece_t;
+
+static const hal_battery_piece_t hal_battery_piecewise_func[] = {
+    //(7396.0, -457.0, 461.0, -7803.0, 192.0, -19026.0, 508.0, -6830.0, 888.0,
+    //-3527.0, 8475.0, 493.0)
+    {.bound = 3530, .A = 7396, .B = -457},
+    {.bound = 3620, .A = 461, .B = -7803},
+    {.bound = 3680, .A = 192, .B = -19026},
+    {.bound = 3830, .A = 508, .B = -6830},
+    {.bound = 3900, .A = 888, .B = -3527},
+    {.bound = UINT32_MAX, .A = 8475, .B = 493},
+};
+
 void *hal_display_get_context(void)
 {
     return (display_t*)&_disp_dev;
@@ -61,8 +78,16 @@ uint32_t hal_battery_read_voltage(void)
 int hal_battery_get_percentage(uint32_t voltage)
 {
     /* 4200mV is full, 3500mV is empty */
-    int percentage = (voltage - 3500) / 7;
-    if (voltage < 3500) {
+    int percentage = 100;
+    for (size_t i = 0; i < ARRAY_SIZE(hal_battery_piecewise_func); i++) {
+        const hal_battery_piece_t *piece = &hal_battery_piecewise_func[i];
+        if (voltage <= piece->bound) {
+            percentage = ((1024 * (int32_t)voltage) / piece->A + piece->B) / 10;
+            break;
+        }
+    }
+
+    if (percentage < 0) {
         return 0;
     }
     else if (percentage > 100) {
