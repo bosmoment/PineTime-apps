@@ -27,17 +27,18 @@ Fresh binaries from the CI:
 - *Time synchronisation*: Bluetooth GATT Current Time Service client
 - *Time keeping*: nRF52832 RTC for ticks per second time/date updates
 - *Graphical user interface*: via LittleVGL.
-- *Touch screen driver*: a basic cst816s touch screen driver is included in the RIOT fork
+- *Touch screen driver*: a cst816s touch screen driver with gesture support is included in the RIOT fork
 
-And the default "home" screen includes:
-- *Time/date*: The current minutes and hour are shown as numbers, the day,
-               the month and year are shown and a second "hand" is shown as a
-               circular meter.
+And the default watch face screen includes:
+- *Time/date*: Both time and date are shown on the main watch face with the
+               time taking up the majority of the space.
 - *Battery status*: Battery status is available on the main screen
 - *Bluetooth status*: Bluetooth connection and advertisement mode is shown on
                       the screen
 
-More to follow
+Multiple watch faces are supported with smooth scrolling between the different
+faces. For now two dummy watch faces, one for notifications and one for
+activity, are included as proof of concept.
 
 ## Structure
 
@@ -46,9 +47,9 @@ The project is separated into a number of directories:
 - *RIOT*: The RIOT submodule used for compilation
 - *apps*: Contains firmware applications for the PineTime.
 - *modules*: Additional modules written to support the firmware applications
-- *widgets*: A collection of small user applications for the end user of the
-  PineTime, for example: a stopwatch widget; a configuration widget; a
-  heartbeat graph widget.
+- *widgets*: A collection of small user applications or watch faces for the end
+  user of the PineTime, for example: a stopwatch widget; a configuration
+  widget; a heartbeat graph widget, a notification watch face.
 
 ## Getting started
 
