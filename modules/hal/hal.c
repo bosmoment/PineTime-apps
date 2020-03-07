@@ -24,20 +24,17 @@ static ili9341_t _disp_dev;
 static bool display_on;
 
 typedef struct {
-    uint32_t bound; /**< Upper bound of this region */
-    int32_t A;
-    int32_t B;
-} hal_battery_piece_t;
+    float bound; /**< Upper bound of this region */
+    float percentage;
+} hal_battery_section_t;
 
-static const hal_battery_piece_t hal_battery_piecewise_func[] = {
-    //(7396.0, -457.0, 461.0, -7803.0, 192.0, -19026.0, 508.0, -6830.0, 888.0,
-    //-3527.0, 8475.0, 493.0)
-    {.bound = 3530, .A = 7396, .B = -457},
-    {.bound = 3620, .A = 461, .B = -7803},
-    {.bound = 3680, .A = 192, .B = -19026},
-    {.bound = 3830, .A = 508, .B = -6830},
-    {.bound = 3900, .A = 888, .B = -3527},
-    {.bound = UINT32_MAX, .A = 8475, .B = 493},
+static const hal_battery_section_t hal_battery_piecewise_func[] = {
+    {.bound = 3450, .percentage = 0 },
+    {.bound = 3800, .percentage = 4 },
+    {.bound = 3890, .percentage = 25 },
+    {.bound = 3945, .percentage = 57 },
+    {.bound = 4130, .percentage = 96 },
+    {.bound = 4200, .percentage = 100 },
 };
 
 void *hal_display_get_context(void)
@@ -79,10 +76,15 @@ int hal_battery_get_percentage(uint32_t voltage)
 {
     /* 4200mV is full, 3500mV is empty */
     int percentage = 100;
-    for (size_t i = 0; i < ARRAY_SIZE(hal_battery_piecewise_func); i++) {
-        const hal_battery_piece_t *piece = &hal_battery_piecewise_func[i];
-        if (voltage <= piece->bound) {
-            percentage = ((1024 * (int32_t)voltage) / piece->A + piece->B) / 10;
+    for (size_t i = 1; i < ARRAY_SIZE(hal_battery_piecewise_func); i++) {
+        const hal_battery_section_t *section = &hal_battery_piecewise_func[i];
+        const hal_battery_section_t *psection = &hal_battery_piecewise_func[i - 1];
+        if (voltage <= section->bound) {
+            /* Linear piecewise approximation of the curve */
+            percentage = (((section->percentage - psection->percentage) /
+                    (section->bound - psection->bound) *
+                    (voltage - psection->bound)) +
+                    psection->percentage);
             break;
         }
     }
