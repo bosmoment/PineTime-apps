@@ -284,6 +284,14 @@ static void *_bleman_thread(void *arg)
     bluetil_ad_add_name(&ad, _device_name);
     ble_gap_adv_set_data(ad.buf, ad.pos);
 
+    /* Set device name */
+    struct ble_hs_adv_fields fields;
+    memset(&fields, 0, sizeof fields);
+    fields.name = (uint8_t *)_device_name;
+    fields.name_len = strlen(_device_name);
+    fields.name_is_complete = 1;
+    ble_gap_adv_set_fields(&fields);
+
     bleman_timesync_init(bleman, &_bleman_timesync);
 
     /* start to advertise this node */
