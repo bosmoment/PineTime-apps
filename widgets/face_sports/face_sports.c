@@ -14,8 +14,9 @@
 #include "gui/theme.h"
 #include "controller.h"
 #include "kernel_defines.h"
-#include "bleman.h"
-#include "fonts/noto_sans_numeric_80.h"
+
+static const char title_text[] = GUI_COLOR_LBL_DARK_GREEN " " LV_SYMBOL_SHUFFLE " # Activity";
+static const lv_point_t line_point[] = { {5, 0}, {235, 0} };
 
 static const widget_spec_t face_sports_spec;
 
@@ -50,6 +51,16 @@ lv_obj_t *face_sports_create(face_sports_widget_t *fn)
     lv_obj_t *scr = lv_obj_create(NULL, NULL);
     lv_obj_set_click(scr, true);
     lv_obj_set_event_cb(scr, _face_sports_pressed);
+
+    lv_obj_t *title = lv_label_create(scr, NULL);
+    lv_label_set_recolor(title, true);
+    lv_label_set_text(title, title_text);
+    lv_obj_align(title, scr, LV_ALIGN_IN_TOP_LEFT, 5, 10);
+
+    lv_obj_t *separator = lv_line_create(scr, NULL);
+    lv_line_set_points(separator, line_point, ARRAY_SIZE(line_point));
+    lv_obj_align(separator, scr, LV_ALIGN_IN_TOP_MID, 0, 50);
+
     return scr;
 }
 
