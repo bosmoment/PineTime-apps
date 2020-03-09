@@ -226,12 +226,17 @@ static void _gui_lvgl_trigger(void *arg)
     thread_flags_set((thread_t*)sched_threads[gui->pid], GUI_THREAD_FLAG_LVGL_HANDLE);
 }
 
-static void _gui_screen_on(gui_t *gui)
+static void _gui_screen_switch(gui_t *gui)
 {
     if (gui->display_on == false) {
         gui->display_on = true;
         _gui_lvgl_update(gui);
         hal_display_on();
+    }
+    else {
+        event_timeout_clear(&gui->screen_timeout_ev);
+        gui->display_on = false;
+        hal_display_off();
     }
 }
 
@@ -255,7 +260,7 @@ static void _gui_button_irq(void *arg)
 static void _gui_button_event(event_t *event)
 {
     gui_t *gui = container_of(event, gui_t, button_press);
-    _gui_screen_on(gui);
+    _gui_screen_switch(gui);
     LOG_INFO("[gui] Button press event\n");
     event_timeout_clear(&gui->screen_timeout_ev);
     event_timeout_set(&gui->screen_timeout_ev,
